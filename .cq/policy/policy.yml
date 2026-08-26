@@ -1,0 +1,4 @@
+schemaVersion: 1
+defaultDeny: true
+failClosed: true
+description: CQ OS V2.0 治理策略总开关。defaultDeny=true 表示未显式允许的操作默认拒绝；failClosed=true 表示策略损坏或无法决策时拒绝，不默认放行。

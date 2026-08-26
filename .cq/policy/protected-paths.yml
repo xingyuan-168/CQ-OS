@@ -1,0 +1,9 @@
+schemaVersion: 1
+# 禁止修改/删除的路径（相对工作区）。命中即拒绝写入/编辑，fail-closed。
+protected:
+  - "preset/**"
+  - ".cq/policy/**"
+  - "**.env"
+  - "**/secrets/**"
+  - "**/credentials/**"
+  - ".dsh/**"
