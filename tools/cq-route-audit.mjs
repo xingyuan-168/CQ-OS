@@ -9,10 +9,15 @@ export function validateRouteAudit(record) {
   return { valid: errors.length === 0, errors, routeChanged: Boolean(requested?.provider && served?.provider && (requested.provider !== served.provider || requested.model !== served.model)) }
 }
 
-if (import.meta.url === `file://${process.argv[1]?.replaceAll('\\', '/')}`) {
+import { pathToFileURL } from 'node:url'
+import { resolve } from 'node:path'
+import { readFile } from 'node:fs/promises'
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const source = process.argv[2]
-  if (!source) throw new Error('usage: node tools/cq-route-audit.mjs <json-record>')
-  const result = validateRouteAudit(JSON.parse(source))
+  if (!source) throw new Error('usage: node tools/cq-route-audit.mjs <json-record | path-to-json>')
+  const text = await readFile(resolve(source)).catch(() => source)
+  const result = validateRouteAudit(JSON.parse(text))
   console.log(JSON.stringify(result, null, 2))
   if (!result.valid) process.exitCode = 1
 }

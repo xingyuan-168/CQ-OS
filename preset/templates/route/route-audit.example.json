@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "requested": { "provider": "zai-coding-cn", "model": "GLM-5.3" },
+  "served": { "provider": "zai-coding-cn", "model": "GLM-5.3" },
+  "gateway": null,
+  "fallback": false,
+  "providerCount": 4,
+  "providers": ["DeepSeek", "CX-5.6", "lg-5.6", "zai-coding-cn"],
+  "note": "Direct in-process DSH route; no external gateway."
+}

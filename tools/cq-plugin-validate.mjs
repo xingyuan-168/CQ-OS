@@ -54,10 +54,15 @@ export function validatePluginManifest(manifest, runtime) {
   return { valid: errors.length === 0, errors }
 }
 
-if (import.meta.url === `file://${process.argv[1]?.replaceAll('\\', '/')}`) {
+import { pathToFileURL } from 'node:url'
+import { resolve } from 'node:path'
+import { readFile } from 'node:fs/promises'
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const [source, cqOS = '0.2.0', dsh = '0.1.1-rc.2'] = process.argv.slice(2)
-  if (!source) throw new Error('usage: node tools/cq-plugin-validate.mjs <json-manifest> [cqOS] [dsh]')
-  const result = validatePluginManifest(JSON.parse(source), { cqOS, dsh })
+  if (!source) throw new Error('usage: node tools/cq-plugin-validate.mjs <json-manifest | path-to-json> [cqOS] [dsh]')
+  const text = await readFile(resolve(source), 'utf8').catch(() => source)
+  const result = validatePluginManifest(JSON.parse(text), { cqOS, dsh })
   console.log(JSON.stringify(result, null, 2))
   if (!result.valid) process.exitCode = 1
 }

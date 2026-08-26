@@ -2,6 +2,7 @@
 import { createHash } from 'node:crypto'
 import { readdir, readFile, mkdir, writeFile } from 'node:fs/promises'
 import { join, relative, resolve, extname } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 const allowedTypes = new Set(['project', 'decision', 'progress', 'execution-summary', 'bug', 'preference', 'tech-debt', 'version'])
 
@@ -94,6 +95,6 @@ export async function buildMemoryIndex(rootDirectory = '.') {
   return { index: outputPath, records: records.length, reports: reports.length, reportKinds: [...new Set(reports.map((item) => item.kind))] }
 }
 
-if (import.meta.url === `file://${process.argv[1]?.replaceAll('\\', '/')}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   console.log(JSON.stringify(await buildMemoryIndex(process.argv[2] || '.'), null, 2))
 }
