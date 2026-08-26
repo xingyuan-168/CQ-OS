@@ -1,3 +1,12 @@
+---
+id: tech-debt
+type: tech-debt
+status: open
+updatedAt: 2026-08-26T14:32:31+08:00
+commit: a530bf346b82576cd86bc6e9a16c3026fe95c1e5
+title: Technical Debt
+---
+
 # Technical Debt
 
 ## V2 Research Status

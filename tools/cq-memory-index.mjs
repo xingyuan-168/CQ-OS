@@ -47,7 +47,7 @@ const walk = async (dir) => {
   const entries = await readdir(dir, { withFileTypes: true })
   const files = []
   for (const entry of entries) {
-    if (entry.name === 'index.json' || entry.name === 'schema' || entry.name === 'validation') continue
+    if (entry.name === 'index.json' || entry.name === 'schema' || entry.name === 'validation' || entry.name === 'selfcheck' || entry.name === 'review') continue
     const path = join(dir, entry.name)
     if (entry.isDirectory()) files.push(...await walk(path))
     else if (extname(entry.name).toLowerCase() === '.md') files.push(path)

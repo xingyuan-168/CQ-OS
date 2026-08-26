@@ -1,3 +1,12 @@
+---
+id: adr-0001-cq-os-bootstrap
+type: decision
+status: accepted
+updatedAt: 2026-08-26T10:33:35+08:00
+commit: 935b238aa406cb4625046490f6b081ec7c499743
+title: ADR-0001: 基于 DSH Cordis 预设 Bootstrap CQ OS
+---
+
 # ADR-0001: 基于 DSH Cordis 预设 Bootstrap CQ OS
 
 ## 状态

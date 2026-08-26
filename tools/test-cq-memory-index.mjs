@@ -9,9 +9,12 @@ try {
   await writeFile(join(root, '.cq', 'project.md'), '# Project\nlegacy project')
   await writeFile(join(root, '.cq', 'decisions', 'one.md'), '# One\nlegacy decision')
   await writeFile(join(root, '.cq', 'decisions', 'two.md'), '---\nid: decisions-one\ntype: decision\nstatus: accepted\nupdatedAt: 2026-01-01\n---\n# Two\nmissing commit')
+  await mkdir(join(root, '.cq', 'selfcheck'), { recursive: true })
+  await writeFile(join(root, '.cq', 'selfcheck', 'X.md'), '# X\nnot a memory record')
   const result = await buildMemoryIndex(root)
   const index = JSON.parse(await readFile(join(root, '.cq', 'index.json'), 'utf8'))
   if (result.records !== 3 || index.records.length !== 3) throw new Error('record count mismatch')
+  if (index.records.some((r) => r.path.includes('selfcheck'))) throw new Error('selfcheck leaked into index')
   for (const kind of ['legacy', 'missing-commit', 'duplicate-id']) {
     if (!index.reports.some((item) => item.kind === kind)) throw new Error(`${kind} report missing`)
   }
