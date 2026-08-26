@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.0
+
+- CQ Memory schema 一次性迁移（狗粮课题）完成：5 个记忆文件补 front matter、索引器 skip 名单修正（selfcheck/review）、签署 ADR-0024、索引 5/0 → 7/0 幂等重建、回归全过。
+
 ## Unreleased / V2 baseline
 
 - 完成 V2.0 治理开源调研与 `tools/pre-execute` 原生拒绝 PoC；记录 `tools.guard()` 动态注入兼容性限制；签署 ADR-0020（首期复用 pre-execute，不引入第三方策略引擎）。
