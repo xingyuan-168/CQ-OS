@@ -1,0 +1,5 @@
+# DSH deployment output is never source
+.cq/executions/raw/
+node_modules/
+*.log
+.DS_Store
