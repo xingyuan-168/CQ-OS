@@ -1,0 +1,11 @@
+# Generic docker-compose template.
+# Start with `docker compose up -d` after filling in service ports and env.
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/app

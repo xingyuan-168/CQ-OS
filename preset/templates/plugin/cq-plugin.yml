@@ -1,0 +1,46 @@
+schemaVersion: 1
+id: cq-plugin-example
+name: Example CQ Plugin
+version: 0.1.0
+license: MIT
+plane: preset
+compat:
+  cqOS: ">=0.2.0 <0.4.0"
+  dsh: ">=0.1.1-rc.2 <1.0.0"
+contributes:
+  rows:
+    - rows/example.cordis.yml
+  skills:
+    - skills/
+  templates:
+    - templates/
+capabilities:
+  tools:
+    allow:
+      - read
+      - grep
+    deny:
+      - cordis_define
+      - cordis_run
+  files:
+    allow:
+      - docs/**
+    deny:
+      - preset/**
+      - .cq/policy/**
+  network: false
+  model:
+    providers: []
+    maxCostPerRun: null
+  data:
+    persist: false
+    scopes:
+      - .cq/
+lifecycle:
+  install: none
+  upgrade: none
+  uninstall: none
+  rollback: none
+security:
+  risk: low
+  notes: Example only; permissions are declarative until mapped to verified DSH controls.

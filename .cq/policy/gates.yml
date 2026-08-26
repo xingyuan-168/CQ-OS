@@ -1,0 +1,12 @@
+schemaVersion: 1
+# 关键阶段确认门禁。未满足 gate 前禁止进入下一阶段对应行为（fail-closed）。
+gates:
+  design-approval:
+    description: 架构/设计完成后需 Human Gate 确认，未确认前不得委派 Developer 或写实现代码。
+    tool: ask_user_question
+  frontend-approval:
+    description: 前端 UX/UI 完成后需用户确认，未批准前禁止开发。
+    tool: ask_user_question
+  production-release:
+    description: 生产发布需人工批准。
+    tool: ask_user_question

@@ -1,0 +1,30 @@
+schemaVersion: 1
+roles:
+  developer:
+    canWrite: true
+    canExecuteCommand: true
+    cannot: [modify-governance-rules, delete-core-data, modify-production]
+  architect:
+    canWrite: true
+    canExecuteCommand: true
+  product:
+    canWrite: true
+    canExecuteCommand: false
+  research:
+    canWrite: true
+    canExecuteCommand: false
+  ux:
+    canWrite: true
+    canExecuteCommand: false
+  ui:
+    canWrite: true
+    canExecuteCommand: false
+  tester:
+    canWrite: false
+    canExecuteCommand: true
+  devops:
+    canWrite: true
+    canExecuteCommand: true
+  review:
+    canWrite: false
+    canExecuteCommand: false

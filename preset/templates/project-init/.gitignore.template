@@ -1,0 +1,29 @@
+# Dependencies / build artifacts
+node_modules/
+dist/
+build/
+target/
+*.log
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Test / coverage
+coverage/
+.pytest_cache/
+.cache/
+
+# CQ OS derived index (rebuild from Markdown)
+.cq/index.json

@@ -1,0 +1,23 @@
+schemaVersion: 1
+kind: cq-memory
+sourceOfTruth: markdown
+required:
+  - id
+  - type
+  - status
+  - updatedAt
+allowedTypes:
+  - project
+  - decision
+  - progress
+  - execution-summary
+  - bug
+  - preference
+  - tech-debt
+  - version
+legacyStatus: legacy
+index:
+  path: .cq/index.json
+  derived: true
+  tracked: false
+  rebuildable: true
