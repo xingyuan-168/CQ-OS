@@ -1,0 +1,38 @@
+schemaVersion: 1
+# CQ OS 模型路由映射。声明每个角色/任务类别的推荐模型选择。
+# 目标必须是 DSH 已注册的 provider/model（由 tools/cq-routemap.mjs 校验）。
+# 优先级：任务复杂/架构类用强模型；实现/常规用低成本模型。基于 DSH 原生 per-agent provider/model。
+default:
+  provider: zai-coding-cn
+  model: GLM-5.3
+  reason: 默认路由
+byRole:
+  architect:
+    provider: zai-coding-cn
+    model: GLM-5.3
+    reason: 架构/技术选型需强模型
+  developer:
+    provider: zai-coding-cn
+    model: GLM-5.3
+    reason: 实现落地，通用模型
+  product:
+    provider: zai-coding-cn
+    model: GLM-5.3
+    reason: 需求分析
+  research:
+    provider: zai-coding-cn
+    model: GLM-5.3
+    reason: 开源调研
+  review:
+    provider: zai-coding-cn
+    model: GLM-5.3
+    reason: 只读审查
+byComplexity:
+  high:
+    provider: zai-coding-cn
+    model: GLM-5.3
+    reason: 高复杂度
+  low:
+    provider: zai-coding-cn
+    model: GLM-5.3
+    reason: 低成本
