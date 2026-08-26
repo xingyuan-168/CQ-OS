@@ -3,12 +3,9 @@ import { createHash } from 'node:crypto'
 import { readdir, readFile, mkdir, writeFile } from 'node:fs/promises'
 import { join, relative, resolve, extname } from 'node:path'
 
-const root = resolve(process.argv[2] || '.')
-const memoryRoot = join(root, '.cq')
-const outputPath = join(memoryRoot, 'index.json')
 const allowedTypes = new Set(['project', 'decision', 'progress', 'execution-summary', 'bug', 'preference', 'tech-debt', 'version'])
 
-const categoryFor = (path) => {
+const categoryFor = (memoryRoot, path) => {
   const rel = relative(memoryRoot, path).replaceAll('\\', '/')
   if (rel === 'project.md') return 'project'
   if (rel === 'progress.md') return 'progress'
@@ -57,48 +54,46 @@ const walk = async (dir) => {
   return files
 }
 
-const files = await walk(memoryRoot)
-const records = []
-const reports = []
-const seen = new Map()
-for (const path of files.sort()) {
-  const text = await readFile(path, 'utf8')
-  const rel = relative(root, path).replaceAll('\\', '/')
-  const category = categoryFor(path)
-  const metadata = parseFrontMatter(text)
-  const id = metadata.id || rel.replace(/^\.cq\//, '').replace(/\.md$/i, '').replace(/[^a-zA-Z0-9/_-]+/g, '-').replaceAll('/', '-')
-  const type = metadata.type || category || 'legacy'
-  const status = metadata.status || 'legacy'
-  const hash = createHash('sha256').update(text).digest('hex')
-  const record = {
-    id,
-    type,
-    status,
-    agent: metadata.agent || null,
-    commit: metadata.commit || null,
-    version: metadata.version || null,
-    title: metadata.title || titleFor(text, id),
-    tags: metadata.tags || null,
-    updatedAt: metadata.updatedAt || null,
-    path: rel,
-    hash,
+export async function buildMemoryIndex(rootDirectory = '.') {
+  const root = resolve(rootDirectory)
+  const memoryRoot = join(root, '.cq')
+  const outputPath = join(memoryRoot, 'index.json')
+  const files = await walk(memoryRoot)
+  const records = []
+  const reports = []
+  const seen = new Map()
+  for (const path of files.sort()) {
+    const text = await readFile(path, 'utf8')
+    const rel = relative(root, path).replaceAll('\\', '/')
+    const category = categoryFor(memoryRoot, path)
+    const metadata = parseFrontMatter(text)
+    const id = metadata.id || rel.replace(/^\.cq\//, '').replace(/\.md$/i, '').replace(/[^a-zA-Z0-9/_-]+/g, '-').replaceAll('/', '-')
+    const type = metadata.type || category || 'legacy'
+    const status = metadata.status || 'legacy'
+    const record = {
+      id, type, status,
+      agent: metadata.agent || null,
+      commit: metadata.commit || null,
+      version: metadata.version || null,
+      title: metadata.title || titleFor(text, id),
+      tags: metadata.tags || null,
+      updatedAt: metadata.updatedAt || null,
+      path: rel,
+      hash: createHash('sha256').update(text).digest('hex'),
+    }
+    records.push(record)
+    if (!allowedTypes.has(type) && type !== 'legacy') reports.push({ kind: 'invalid-type', path: rel, type })
+    if (!metadata.id || !metadata.type || !metadata.status) reports.push({ kind: 'legacy', path: rel })
+    if (!record.commit && type !== 'project' && type !== 'preference') reports.push({ kind: 'missing-commit', path: rel })
+    if (seen.has(id)) reports.push({ kind: 'duplicate-id', id, paths: [seen.get(id), rel] })
+    else seen.set(id, rel)
   }
-  records.push(record)
-  if (!allowedTypes.has(type) && type !== 'legacy') reports.push({ kind: 'invalid-type', path: rel, type })
-  if (!metadata.id || !metadata.type || !metadata.status) reports.push({ kind: 'legacy', path: rel })
-  if (!record.commit && type !== 'project' && type !== 'preference') reports.push({ kind: 'missing-commit', path: rel })
-  if (seen.has(id)) reports.push({ kind: 'duplicate-id', id, paths: [seen.get(id), rel] })
-  else seen.set(id, rel)
+  const index = { schemaVersion: 1, generatedAt: new Date().toISOString(), source: '.cq', authoritative: 'markdown', records, reports }
+  await mkdir(memoryRoot, { recursive: true })
+  await writeFile(outputPath, `${JSON.stringify(index, null, 2)}\n`, 'utf8')
+  return { index: outputPath, records: records.length, reports: reports.length, reportKinds: [...new Set(reports.map((item) => item.kind))] }
 }
 
-const index = {
-  schemaVersion: 1,
-  generatedAt: new Date().toISOString(),
-  source: '.cq',
-  authoritative: 'markdown',
-  records,
-  reports,
+if (import.meta.url === `file://${process.argv[1]?.replaceAll('\\', '/')}`) {
+  console.log(JSON.stringify(await buildMemoryIndex(process.argv[2] || '.'), null, 2))
 }
-await mkdir(memoryRoot, { recursive: true })
-await writeFile(outputPath, `${JSON.stringify(index, null, 2)}\n`, 'utf8')
-console.log(JSON.stringify({ index: outputPath, records: records.length, reports: reports.length, reportKinds: [...new Set(reports.map((item) => item.kind))] }, null, 2))
