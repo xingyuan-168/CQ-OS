@@ -31,7 +31,7 @@ title: Progress
 
 - V2 开源优先计划已获批准并已推送到 `origin/v2`。
 - V2.0 Governance：Research/PoC Complete；Runtime Integration Pending（已签署 ADR-0020，首期复用 `tools/pre-execute`，不引入第三方策略引擎；`tools.guard()`/`fs/write-intent`/`approval` 已确认当前动态 Host 端不可用为强制控制，正式持久治理移到维护预设阶段）。
-- V2.1 Memory：Schema/Index PoC Complete；Migration Complete（狗粮迁移 v0.2.0 已闭环）；Runtime Loop Pending。
+- V2.1 Memory：Schema/Index/Migration Complete（狗粮迁移 v0.2.0 已闭环）；Query Loop Complete（`tools/cq-memory-query.mjs`，索引 9/0）；bugs/preference 类型补齐完成。
 - V2.2 Model Router：Native Capability Research Complete；Real Model Routing Verification Pending（首期复用 DSH 原生 per-agent provider/model + route-audit 校验；LiteLLM 仅为条件增强，需跨 provider failover 才引入）。
 - V2.3 Plugin Contract：Contract PoC Complete；Production Scope Not Frozen（离线 manifest 校验器与创作期合并器就绪；真实 row/isolate 挂载验证待维护预设阶段）。
 
