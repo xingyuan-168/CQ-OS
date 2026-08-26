@@ -21,10 +21,16 @@ CQ OS（苍穹模式）是 DSH 的第五种用户 Agent 模式，目标是让 AI
 
 Git 是唯一版本管理方式。Git 不可用时，项目初始化必须阻塞，不使用手工快照或 v1/v2/v3 复制目录。
 
+## V2 开源优先
+
+V2 的任何能力必须先完成成熟开源项目或官方生态调研，再决定复用、二开、组合或最小自研。每个子系统必须有方案矩阵、许可证和安全检查、最小 PoC、ADR、接口预留、测试和 Git 版本记录后才能实施。
+
+V2 计划见 [`docs/v2-plan.md`](docs/v2-plan.md)。
+
 ## 后续任务
 
 - B1：稳定后评估日常模式关闭 Cordis 自修改能力，仅维护/升级状态启用
-- B2：CQ Governance Plugin，提供不可绕过的治理策略和路径级 RBAC
-- B3：第三方插件标准
-- B4：模型动态路由，并核验子 Agent 实际请求模型，不能只验证 API 存在
-- B5：宿主级或结构化 CQ Memory 存储
+- B2：CQ Governance Plugin，优先复用 DSH guard/approval/sandbox，再评估 OPA、Cedar、Casbin、Cerbos
+- B3：第三方插件标准，优先复用 DSH loader、npm metadata、SemVer、Backstage/VS Code/MCP 等成熟契约
+- B4：模型动态路由，优先复用 DSH provider/model、retry 和成熟路由项目，并核验子 Agent 实际请求模型
+- B5：结构化 CQ Memory，优先复用 Git-backed Markdown、SQLite/FTS 和成熟 Memory 项目
