@@ -4,7 +4,7 @@
 
 - V2 开源优先原则已纳入 `docs/v2-plan.md`。
 - V2.0 治理调研完成：首选复用 DSH 原生 guard、pre-execute、fs intent、approval、sandboxPolicy 和 subagent 生命周期；OPA/Cedar/Casbin/Cerbos 暂为二开备选。
-- V2.0 原生 PoC：`tools/pre-execute` 拒绝已成功；`ctx.tools.guard()` 与 Inspect 契约不一致，需定位正确 owner/注入方式。
+- V2.0 原生 PoC：`tools/pre-execute` 拒绝已成功；通过 `ctx.get('tools')` 的第二次 `tools.guard()` 探测仍失败，当前动态 Package 不纳入该 API。
 - V2.0 下一步必须完成兼容性定位、文件 intent/approval/subagent 事件 PoC 和 ADR；未完成前不得引入第三方策略依赖或声明硬 RBAC 已实现。
 
 ## Deferred
