@@ -1,5 +1,7 @@
 # DSH deployment output is never source
 .cq/executions/raw/
+.cq/index.json
+.cq/validation/
 node_modules/
 *.log
 .DS_Store

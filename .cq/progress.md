@@ -17,12 +17,15 @@
 
 ## V2 Current
 
-- V2 开源优先计划已获批准。
-- 阶段 0：准备 V2 基线，所有子系统先完成成熟开源方案调研、PoC 和 ADR。
+- V2 开源优先计划已获批准并已推送到 `origin/v2`。
+- V2.0 已完成开源矩阵和 `tools/pre-execute` 拒绝 PoC；`tools.guard()` 动态注入方式仍需兼容性定位，尚未进入持久治理实现。
+- V2.1 已完成开源调研、schema、零依赖索引脚本和真实仓库重建 PoC；两次重建记录和诊断内容稳定。
+- V2.2 已完成 DSH 源码级路由调研和 ADR 草案，首期采用 DSH 原生 per-agent provider/model；LiteLLM 仅为条件增强。
+- V2.3 已完成插件契约/维护模式开源调研和 ADR 草案，真实 row/isolate 组合 PoC 尚未完成。
 
 ## V2 Remaining
 
-- V2.0 治理策略开源调研与 PoC。
-- V2.1 CQ Memory 开源调研与 PoC。
-- V2.2 模型路由开源调研与 PoC。
-- V2.3 CQ Plugin 契约与维护模式开源调研。
+- V2.0：补齐 fs intent、approval、subagent lifecycle PoC，定位 `tools.guard()` 注入边界并完成正式 ADR。
+- V2.1：按需评估 DSH storageDomain/SQLite FTS5；当前零依赖方案已满足首期索引验收。
+- V2.2：完成 DSH 原生 per-agent 路由行为测试；只有跨 provider failover/预算需求成立才启动 LiteLLM PoC。
+- V2.3：完成消费型 row、isolate 服务行、松散服务行和 host-plane row 的真实挂载验证，再决定是否实现 manifest 校验器。
