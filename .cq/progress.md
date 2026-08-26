@@ -20,8 +20,8 @@
 - V2 开源优先计划已获批准并已推送到 `origin/v2`。
 - V2.0 已完成开源矩阵和 `tools/pre-execute` 拒绝 PoC；`tools.guard()` 动态注入方式仍需兼容性定位，尚未进入持久治理实现。
 - V2.1 已完成开源调研、schema、零依赖索引脚本和真实仓库重建 PoC；两次重建记录和诊断内容稳定。
-- V2.2 已完成 DSH 源码级路由调研和 ADR 草案，首期采用 DSH 原生 per-agent provider/model；LiteLLM 仅为条件增强。
-- V2.3 已完成插件契约/维护模式开源调研和 ADR 草案，真实 row/isolate 组合 PoC 尚未完成。
+- V2.2 已完成 DSH 源码级路由调研、ADR 草案和最小 route-audit 校验；首期采用 DSH 原生 per-agent provider/model；LiteLLM 仅为条件增强。
+- V2.3 已完成插件契约/维护模式开源调研、ADR 草案和最小 manifest 校验；真实 row/isolate 组合 PoC 尚未完成。
 
 ## V2 Remaining
 

@@ -1,0 +1,29 @@
+schemaVersion: 1
+kind: cq-plugin
+required:
+  - id
+  - version
+  - plane
+  - compat
+  - rows
+  - capabilities
+  - lifecycle
+idPattern: "^[a-z0-9][a-z0-9-]*$"
+planes:
+  - preset
+  - client
+forbiddenHostPlane: true
+requiredCompat:
+  - cqOS
+  - dsh
+requiredCapabilities:
+  - tools
+  - files
+  - network
+  - model
+  - data
+requiredLifecycle:
+  - install
+  - upgrade
+  - uninstall
+  - rollback
