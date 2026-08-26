@@ -13,7 +13,9 @@
 ## V1 Status
 
 - V1 源码、部署、`standingKeyFor('cq-os')` 真挂载和 Git v0.1.0 已完成。
-- 新苍穹模式会话工具目录、Gate A、Gate B 仍需用户在 Web GUI 实测。
+- 已完成 P0–P2 收口修复：清理 8 角色 toolFilter 死名、修正 Workflow 绕过角色与结果传递、补失败恢复规则、补 Research 开源评估字段、Memory schema 迁移规则、project-init 骨架、统一 Cordis 自修改描述、校正 V2 进度标记。
+- 新增死名扫描回归防护 `tools/check-toolfilter-deadnames.mjs`（`agent.cordis.yml` 扫描为 `dead: []`）。
+- 新苍穹模式会话工具目录、Gate A、Gate B、9 角色 smoke test 仍需用户在 Web GUI 实测。
 
 ## V2 Current
 
