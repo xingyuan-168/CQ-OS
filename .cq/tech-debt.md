@@ -4,9 +4,8 @@
 
 - V2 开源优先原则已纳入 `docs/v2-plan.md`。
 - V2.0 治理调研完成：首选复用 DSH 原生 guard、pre-execute、fs intent、approval、sandboxPolicy 和 subagent 生命周期；OPA/Cedar/Casbin/Cerbos 暂为二开备选。
-- V2.0 原生 PoC：`tools/pre-execute` 拒绝已成功；通过 `ctx.get('tools')` 的第二次 `tools.guard()` 探测仍失败，当前动态 Package 不纳入该 API。
-- V2.0 `fs/write-intent` 动态 PoC 未通过：listener 未覆盖动态工具，且工具 cwd 落在 `C:\\Users\\84700`；该事件返回 `undefined` 会继续写入，不能作为 deny。正式路径级控制必须验证 Agent-scoped fs provider 或在工具派发前拒绝。
-- V2.0 下一步必须完成 Agent-scoped 接入、approval/subagent 事件 PoC 和 ADR；未完成前不得引入第三方策略依赖或声明硬 RBAC 已实现。
+- V2.0 PoC 实测结论：`tools/pre-execute` 是当前唯一可用、可重入的工具级硬拦截；`tools.guard()` 在动态 Package 实例缺失（`ctx.get('tools')` 无该方法）；`fs/write-intent` 返回 `undefined` 即继续写入且动态 listener 未覆盖；approval 缺 answerer fail-closed（`unavailable`），但动态 Host 无 `AbortController` 无法实测调用。
+- V2.0 ADR-0020 已签署为“首期复用 `tools/pre-execute`，不引入第三方策略引擎”。Agent-scoped guard、ask 审批、正式 Agent-scoped fs intent 和 subagent 委派状态仍需维护预设阶段验证；未完成前不得声明硬 RBAC 已实现。
 
 ## Deferred
 
