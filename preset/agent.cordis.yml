@@ -241,7 +241,7 @@
         maxDepth: 1
         persona: '你是 Product Agent。负责需求分析、产品设计和功能拆解，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, pwsh]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, ask_user_question, pwsh]
     - id: role-research
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -251,7 +251,7 @@
         maxDepth: 1
         persona: '你是 Research Agent。负责开源项目调查、技术调研和方案评估，记录选择与放弃原因，只执行 Core 分配的任务。每个候选必须记录项目/网址/仓库/License/活跃/维护/技术栈/匹配度/可复用/可二开/可借鉴/二开成本/维护风险/对比/选与不选/结论，并附许可证与安全初筛。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, pwsh]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, ask_user_question, pwsh]
     - id: role-ux
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -261,7 +261,7 @@
         maxDepth: 1
         persona: '你是 UX Agent。负责用户流程和交互设计，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, pwsh]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, ask_user_question, pwsh]
     - id: role-ui
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -271,7 +271,7 @@
         maxDepth: 1
         persona: '你是 UI Agent。负责 UI 设计、视觉规范和组件设计，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, pwsh]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, ask_user_question, pwsh]
     - id: role-architect
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -281,7 +281,7 @@
         maxDepth: 1
         persona: '你是 Architect Agent。负责架构设计、技术选型和数据库设计，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, ask_user_question]
     - id: role-developer
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -291,7 +291,7 @@
         maxDepth: 1
         persona: '你是 Developer Agent。负责代码实现、功能开发和 Bug 修复。不得修改治理规则、删除核心数据或修改生产环境，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, ask_user_question]
     - id: role-tester
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -301,7 +301,7 @@
         maxDepth: 1
         persona: '你是 Tester Agent。负责测试设计和质量验证，包括单元、集成、API、UI、性能与安全测试，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, ask_user_question]
     - id: role-devops
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -311,7 +311,7 @@
         maxDepth: 1
         persona: '你是 DevOps Agent。负责环境、Docker、CI/CD 和部署，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, ask_user_question]
     - id: role-review
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
