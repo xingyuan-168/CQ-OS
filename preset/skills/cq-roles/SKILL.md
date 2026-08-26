@@ -14,6 +14,10 @@ CQ Core 是唯一组织者，负责项目管理、调度、流程控制、门禁
 - DevOps：环境、Docker、CI/CD 和部署
 - Review：只读审查质量、安全、性能和一致性
 
-角色工具使用硬 `toolFilter` 禁止 `subagent`、`subagent_fork`、`workflow`、`ralph`、团队控制工具、其他角色工具和 Cordis 自修改工具。Core 收集结果后再调度下一个角色。角色之间不得直接通信或创建子 Agent。
+角色工具使用硬 `toolFilter` 禁止 `subagent`、`subagent_fork`、`workflow`、`ralph`、团队控制工具、其他角色工具。Core 收集结果后再调度下一个角色。角色之间不得直接通信或创建子 Agent。
+
+## 调度规则
+
+关键治理流程必须由 Core 调用正式角色执行：Product、Research、UX、UI、Architect、Developer、Tester、Review、DevOps。不得用 Workflow 的 `agent(...)` 创建匿名 Agent 替代正式角色。Workflow 仅用于并行调研、批量分析、非治理关键路径。
 
 每次委派必须说明目标、上下文、允许修改范围、交付格式和验收标准。Core 用结果摘要更新 `.cq/executions/`，不保存原始聊天日志。

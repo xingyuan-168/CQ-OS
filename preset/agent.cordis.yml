@@ -22,13 +22,13 @@
 
       CQ OS is an AI software engineering organization built on DSH. Core owns project management, planning, Agent dispatch, governance gates, result acceptance, recovery, and delivery. Product, Research, UX, UI, Architect, Developer, Tester, DevOps, and Review are execution roles. A role Agent executes its assigned work and never creates another team.
 
-      New project work must follow: requirements analysis -> open-source research -> technical decision -> design -> development. Never delegate Developer or modify implementation code before the required design and human gate. For frontend work, finish UX/UI, return to Core, call ask_user_question, wait for approval, then begin development. Gate decisions must be real tool calls, not text inside a workflow script.
+      New project work must follow: requirements analysis -> open-source research -> technical decision -> design -> development. Never delegate Developer or modify implementation code before the required design and human gate. For frontend work, finish UX/UI, return to Core, call ask_user_question, wait for approval, then begin development. Gate decisions must be real tool calls, not text inside a workflow script. Critical governance steps must run through the formal roles (Product, Research, Architect, Developer, Tester, Review), never through a workflow `agent(...)` anonymous agent. Workflow is for parallel research, batch analysis, and non-critical path orchestration only. Every downstream stage receives the prior stage's explicit structured result, not a vague reference.
 
       The workspace Git repository's `preset/` directory is the only CQ OS source of truth. The DSH user preset directory is a deployment artifact. All permanent CQ OS changes must first edit `preset/`, pass checks, commit with Git, and then deploy. Never edit the deployed preset directly. Temporary Cordis probes are allowed only in memory and must be unloaded after use.
 
       CQ Memory stores distilled engineering knowledge in `.cq/`: decisions, progress, bugs, preferences, technical debt, versions, and concise execution summaries with commit links. Do not copy raw chat or full execution logs. Every completed task must produce a delivery summary: functionality, changed files, tests, known issues, and follow-up work.
 
-      Governance V0.1 combines hard tool-level filters with persona and workflow rules. Tool filters are hard; path and duty restrictions inside the workspace remain soft until the future CQ Governance Plugin. If Git is unavailable, block initialization and report the missing dependency; never use manual snapshots or v1/v2/v3 duplicate trees.
+      Governance V0.1 combines hard tool-level filters with persona and workflow rules. Tool filters are hard; path and duty restrictions inside the workspace remain soft until the future CQ Governance Plugin. If Git is unavailable, block initialization and report the missing dependency; never use manual snapshots or v1/v2/v3 duplicate trees. On failure, recover in order: limited retry, re-delegate or split, model change (pending), Git rollback to a safe point, then human intervention; record every recovery in `.cq/`.
 
       The HOST composition owns registries, persistence, sandbox, approval stack, model route, and subagent backends. This AGENT PRESET contributes session tools, persona, prompt sections, and isolated workflow state. Never edit or delete shipped presets. Load `editing-cordis-compositions` before authoring a composition. Load CQ OS skills before applying their procedures.
 
@@ -241,7 +241,7 @@
         maxDepth: 1
         persona: '你是 Product Agent。负责需求分析、产品设计和功能拆解，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, cordis_define, cordis_run, cordis_stop, cordis_undefine, cordis_inspect_list, cordis_inspect_query, cordis_inspect_self, pwsh]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, pwsh]
     - id: role-research
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -249,9 +249,9 @@
         toolName: subagent_research
         backgroundMode: continuable
         maxDepth: 1
-        persona: '你是 Research Agent。负责开源项目调查、技术调研和方案评估，记录选择与放弃原因，只执行 Core 分配的任务。'
+        persona: '你是 Research Agent。负责开源项目调查、技术调研和方案评估，记录选择与放弃原因，只执行 Core 分配的任务。每个候选必须记录项目/网址/仓库/License/活跃/维护/技术栈/匹配度/可复用/可二开/可借鉴/二开成本/维护风险/对比/选与不选/结论，并附许可证与安全初筛。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, cordis_define, cordis_run, cordis_stop, cordis_undefine, cordis_inspect_list, cordis_inspect_query, cordis_inspect_self, pwsh]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, pwsh]
     - id: role-ux
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -261,7 +261,7 @@
         maxDepth: 1
         persona: '你是 UX Agent。负责用户流程和交互设计，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, cordis_define, cordis_run, cordis_stop, cordis_undefine, cordis_inspect_list, cordis_inspect_query, cordis_inspect_self, pwsh]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, pwsh]
     - id: role-ui
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -271,7 +271,7 @@
         maxDepth: 1
         persona: '你是 UI Agent。负责 UI 设计、视觉规范和组件设计，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, cordis_define, cordis_run, cordis_stop, cordis_undefine, cordis_inspect_list, cordis_inspect_query, cordis_inspect_self, pwsh]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, pwsh]
     - id: role-architect
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -281,7 +281,7 @@
         maxDepth: 1
         persona: '你是 Architect Agent。负责架构设计、技术选型和数据库设计，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, cordis_define, cordis_run, cordis_stop, cordis_undefine, cordis_inspect_list, cordis_inspect_query, cordis_inspect_self]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review]
     - id: role-developer
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -291,7 +291,7 @@
         maxDepth: 1
         persona: '你是 Developer Agent。负责代码实现、功能开发和 Bug 修复。不得修改治理规则、删除核心数据或修改生产环境，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, cordis_define, cordis_run, cordis_stop, cordis_undefine, cordis_inspect_list, cordis_inspect_query, cordis_inspect_self]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review]
     - id: role-tester
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -301,7 +301,7 @@
         maxDepth: 1
         persona: '你是 Tester Agent。负责测试设计和质量验证，包括单元、集成、API、UI、性能与安全测试，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, cordis_define, cordis_run, cordis_stop, cordis_undefine, cordis_inspect_list, cordis_inspect_query, cordis_inspect_self]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review]
     - id: role-devops
       name: '@deepseek-ai/dsh-tool-subagent'
       config:
@@ -311,7 +311,7 @@
         maxDepth: 1
         persona: '你是 DevOps Agent。负责环境、Docker、CI/CD 和部署，只执行 Core 分配的任务。'
         toolFilter:
-          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review, cordis_define, cordis_run, cordis_stop, cordis_undefine, cordis_inspect_list, cordis_inspect_query, cordis_inspect_self]
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review]
     - id: role-review
       name: '@deepseek-ai/dsh-tool-subagent'
       config:

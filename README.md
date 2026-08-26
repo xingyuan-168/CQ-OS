@@ -29,7 +29,7 @@ V2 计划见 [`docs/v2-plan.md`](docs/v2-plan.md)。
 
 ## 后续任务
 
-- B1：稳定后评估日常模式关闭 Cordis 自修改能力，仅维护/升级状态启用
+- B1：CQ OS Runtime 默认不具备 Runtime 自修改能力。永久变更必须修改 Git 仓库 `preset/` 后重新部署。未来若确有需要，新增独立 `cq-os-maint` Maintenance Mode，用于受控维护和升级。
 - B2：CQ Governance Plugin，优先复用 DSH guard/approval/sandbox，再评估 OPA、Cedar、Casbin、Cerbos
 - B3：第三方插件标准，优先复用 DSH loader、npm metadata、SemVer、Backstage/VS Code/MCP 等成熟契约
 - B4：模型动态路由，优先复用 DSH provider/model、retry 和成熟路由项目，并核验子 Agent 实际请求模型
