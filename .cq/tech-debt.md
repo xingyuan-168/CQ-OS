@@ -20,6 +20,8 @@ title: Technical Debt
 - **V2.2 阶段3 进展**：`.cq/routemap.yml` 模型路由映射声明 + `tools/cq-routemap.mjs` 结构性校验器 + 测试已落地并提交（97f2f01）；真实模型池依赖 DSH settings（非 CQ OS 源码）。
 - **V2.3 阶段4 进展**：`tools/test-cq-plugin-e2e.mjs` 端到端（validate+compose+host-plane 拒绝）已落地（4b18cd1）；真实挂载验证确认 cq-os 组合在真实 cq-os agent scope `standingKeyFor` 通过、`composed=cq-os`。
 - **Governance 正式接入 PoC（步骤1）**：standing + Core 两层 guard 拦截验证通过（guard 在真实 cq-os agent scope 注册成功，preset/policy/env/credentials/dsh 受保护路径全命中 deny，src/docs 放行）；spawned 角色层由 `tools.guard` 的 agent-chain 语义（`guardReason` 沿 exec.agent 链查）保证，端到端留到步骤 5 对抗测试；DSH CLI 有官方 `dsh plugin --profile` 依赖管理机制（步骤 3 实测 bare package resolution）。
+- **Baseline+Project 双层策略（步骤2）**：`tools/cq-baseline.mjs` 内置不可放宽 Baseline Policy（preset/、.cq/policy/、.env、credentials、.dsh/**）；`cq-protect.mjs` 合并 baseline+project=Effective（并集，缺项目文件时 baseline 仍保护 fail-closed）；项目策略只能收紧不能放宽基线。测试 5 项全过（提交 28476c3）。
+- **@cq/governance 封装与官方安装（步骤3）**：插件源码 `preset/plugins/cq-governance/`（apply 注册 guard + 双层策略，runtime/maintenance 两模式）；逻辑测试通过（runtime 严格 preset/ 拒绝，maintenance 提升 preset 可写但 env/credentials/.dsh 仍拒）；**官方 `dsh plugin --profile web add` 安装成功，bare package resolution 实测通过**（node_modules/@cq/governance 可解析、exports Config+apply 正确）。
 
 ## Deferred
 
