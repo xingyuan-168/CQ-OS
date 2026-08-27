@@ -6,6 +6,8 @@
 
 ## Unreleased / V2 baseline
 
+- V2 阶段G/M/V/P 增量：治理运行时强制（`tools/cq-protect.mjs` 保护路径匹配器 + 6 命中/4 放行/fail-closed 测试，已证实在 cq-os agent scope 经 guard 拒绝受保护路径）；Memory 决策闭环（决策前查询/任务后写入规则、首个 execution-summary 真实条目、索引 skip 扩展 policy/.README）；版本化收口（需求变更管理流程 + Rule/Workflow 版本追踪）；插件开发运行手册（validate→compose→挂载→卸载完整闭环）。
+- 智能路由（阶段R）由用户决定暂停接线，`.cq/routemap.yml` 保留为按角色的真实模型声明。
 - V2 阶段1/2/3/4/5 生产化增量：验证 `tools.guard()` 在 cq-os agent scope 可用（关闭 ADR-0020 阻塞项）；Memory 查询/类型补齐（9/0）；`.cq/policy/` 治理策略基准 + fail-closed 校验器；`.cq/routemap.yml` 路由映射 + 校验器；V2.3 插件 validate+compose 端到端测试。
 - V2.1 Memory 生产化（本会话部分）：新增 `tools/cq-memory-query.mjs` 查询/过滤能力（按 type/status/agent/commit/version），补 `.cq/bugs.md`、`.cq/preferences.md` 类型骨架，补 `review` 目录 skip 回归断言，索引 9 records / 0 reports。
 - 完成 V2.0 治理开源调研与 `tools/pre-execute` 原生拒绝 PoC；记录 `tools.guard()` 动态注入兼容性限制；签署 ADR-0020（首期复用 pre-execute，不引入第三方策略引擎）。
