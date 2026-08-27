@@ -10,7 +10,7 @@ import { pathToFileURL } from 'node:url'
 // here, this validator checks structure and (optionally) a known-provider list.
 // A malformed or incomplete route map is rejected rather than silently defaulted.
 
-const KNOWN_PROVIDERS = (process.env.CQ_KNOWN_PROVIDERS || 'zai-coding-cn,DeepSeek,CX-5.6,lg-5.6').split(',')
+const KNOWN_PROVIDERS = (process.env.CQ_KNOWN_PROVIDERS || 'deepseek-official,codex-for,lg,zai-coding-cn').split(',')
 const REQUIRED_KEYS = ['provider', 'model', 'reason']
 
 function parse(text) {
