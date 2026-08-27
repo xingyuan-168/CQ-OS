@@ -1,0 +1,124 @@
+# CQ OS Maintenance Mode (cq-os-maint)
+#
+# A minimal, elevated-trust preset for maintaining CQ OS itself: editing
+# `preset/`, running tests, calling preset authoring/validation, committing,
+# deploying, and `standingKeyFor` verification. It deliberately does NOT mount
+# tool-cordis (process-global Inspect Provider collision) and does NOT carry the
+# 9 software-engineering roles — the attack surface stays small.
+#
+# Governance: this preset runs the `@cq/governance` plugin in `maintenance`
+# mode — `preset/**` is writable (that is its job), but `.env`, credentials,
+# `.dsh/**`, and destructive/deploy actions still require Human Approval.
+
+# ── identity ────────────────────────────────────────────────────────────────
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    text: |-
+      You are the CQ OS Maintenance Agent, powered by the {{model}} model. Your working directory is {{cwd}}.
+
+      You exist ONLY to maintain CQ OS itself: edit `preset/` (the sole source of truth), run validation and tests, call preset authoring/validation APIs, commit with Git, deploy, and verify with standingKeyFor. You do not run normal project work and you do not manage the 9 software-engineering roles.
+
+      All permanent changes go through: edit `preset/` -> validate -> commit with Git -> deploy -> standingKeyFor verification -> new-session smoke test. Never edit the deployed preset directory directly as source; it is a deployment artifact regenerated from `preset/`.
+
+      Maintenance runs under an elevated-but-not-anarchic policy: you may edit `preset/**`, but modifying governance rules, deploying, force/reset/delete, and other destructive actions still require Human Approval via ask_user_question. Never bypass the approval stack or sandbox.
+
+      If Git is unavailable, block and report the missing dependency. Never use manual snapshots or v1/v2/v3 duplicate trees.
+
+- id: agent-instructions
+  name: '@deepseek-ai/dsh-agent-instructions'
+  config:
+    maxBytes: 65536
+
+# ── governance (deferred) ───────────────────────────────────────────────────
+# NOTE: @cq/governance as a preset row currently fails Cordis loader normalization
+# ("Cannot read properties of undefined (reading 'validate')"). The plugin shape /
+# loader integration is an open blocker (see .cq/tech-debt.md). Until resolved,
+# cq-os-maint mounts WITHOUT the governance plugin row; governance of maintenance
+# actions (preset/** writable, destructive actions need approval) is enforced by
+# persona rules + the CQ Maintenance skill until the plugin row is repaired.
+
+# ── shell ───────────────────────────────────────────────────────────────────
+- id: tool-bash
+  name: '@deepseek-ai/dsh-tool-bash'
+  disabled: !!js process.platform === 'win32'
+
+- id: tool-pwsh
+  name: '@deepseek-ai/dsh-tool-pwsh'
+  disabled: !!js process.platform !== 'win32'
+
+# ── filesystem ──────────────────────────────────────────────────────────────
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
+  config:
+    sampleOverCapGlobResults: false
+
+# ── background jobs ────────────────────────────────────────────────────────
+- id: tool-jobs
+  name: '@deepseek-ai/dsh-tool-jobs'
+
+# ── skills ──────────────────────────────────────────────────────────────────
+- id: skill-filesystem
+  name: '@deepseek-ai/dsh-skill-filesystem'
+  config:
+    customSkillDirs:
+      - !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('skills/', baseUrl))"
+
+- id: tool-skill
+  name: '@deepseek-ai/dsh-tool-skill'
+
+# ── goals ───────────────────────────────────────────────────────────────────
+- id: tool-goal
+  name: '@deepseek-ai/dsh-tool-goal'
+
+# ── plan mode ───────────────────────────────────────────────────────────────
+- id: planning
+  name: cordis:group
+  group: true
+  isolate:
+    planMode: true
+  config:
+    - id: plan-mode
+      name: '@deepseek-ai/dsh-plan-mode'
+      config:
+        section: |
+              You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language to implement changes means plan the implementation, not execute it.
+
+              Explore first with non-mutating reads and checks. Do not edit or write files, commit, or carry out the plan. When ready, call exit_plan_mode with the complete plan.
+
+# ── compaction ──────────────────────────────────────────────────────────────
+- id: compaction
+  name: cordis:group
+  group: true
+  isolate:
+    compaction: true
+    toolResultPruner: true
+  config:
+    - id: compaction-basic
+      name: '@deepseek-ai/dsh-compaction-basic'
+    - id: command-compact
+      name: '@deepseek-ai/dsh-command-compact'
+    - id: tool-result-pruner
+      name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+      config:
+        thresholdChars: 8192
+        headChars: 4096
+        tailChars: 1024
+
+# ── remaining model-facing rows ─────────────────────────────────────────────
+- id: tool-ask-user
+  name: '@deepseek-ai/dsh-tool-ask-user'
+
+- id: tool-todo
+  name: '@deepseek-ai/dsh-tool-todo'
+  config:
+    allowParallelInProgress: true
+
+- id: tool-web
+  name: '@deepseek-ai/dsh-tool-web'
+  config:
+    fetch: false
+    searchTimeoutMs: 60000

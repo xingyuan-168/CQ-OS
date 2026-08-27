@@ -6,8 +6,11 @@
 //   runtime:     strict — preset/**, .cq/policy/**, .env, credentials, .dsh/** denied
 //   maintenance: elevated — may write preset/**, but governance files, deploy,
 //                and destructive actions still require Human Approval.
+import z from '@deepseek-ai/schemastery'
 import { readFileSync } from 'node:fs'
 import { resolve, join } from 'node:path'
+
+export const name = 'cq-governance'
 
 const BASELINE_PROTECTED_PATHS = ['preset/**', '.cq/policy/**', '**.env', '**/credentials/**', '.dsh/**']
 
@@ -35,20 +38,18 @@ function loadProjectPaths(policyDir) {
 }
 
 function effectiveProtectedPaths({ mode, projectProtected }) {
-  // Two policy levels (system-selected, not project-relaxable):
-  //   runtime:     preset/** denied (strict); project may tighten.
-  //   maintenance: preset/** writable (system elevates it), but all other
-  //                baseline protections and project tightenings still apply.
-  // Project policy may only tighten runtime policy; it can never relax baseline.
-  // The maintenance elevation of preset/** is a system choice, not a project relax.
-  const excluded = mode === 'maintenance' ? ['preset/**'] : []
+  // runtime: preset/** denied; maintenance: preset/** writable (system elevates),
+  // but all other baseline protections and project tightenings still apply.
   const source = mode === 'maintenance'
     ? [...BASELINE_PROTECTED_PATHS.filter((p) => p !== 'preset/**'), ...projectProtected.filter((p) => p !== 'preset/**')]
     : [...BASELINE_PROTECTED_PATHS, ...projectProtected]
-  return [...new Set(source.filter((p) => !excluded.includes(p)))]
+  return [...new Set(source)]
 }
 
-export const Config = { mode: 'runtime' }
+export const Config = z.object({
+  mode: z.union(['runtime', 'maintenance']).default('runtime'),
+  policyDir: z.string().default('.cq/policy'),
+})
 
 export function apply(ctx, config = {}) {
   const mode = config.mode === 'maintenance' ? 'maintenance' : 'runtime'
