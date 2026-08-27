@@ -3,11 +3,14 @@ import { readFileSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-// Reads .cq/policy/protected-paths.yml and provides a glob matcher that decides
-// whether a workspace-relative path is protected. This is the runtime side of
-// V2.0 governance: a guard (tools.guard / tools/pre-execute) calls
-// matchProtected(path) and denies matching writes. The matcher implements a
-// small, predictable glob subset so behavior is fail-closed and testable.
+// Reads .cq/policy/protected-paths.yml and merges it with the system Baseline
+// Policy (see tools/cq-baseline.mjs). Effective protection = baseline ∪ project:
+// project may only tighten, never relax baseline. If the project file is missing,
+// baseline still applies (fail-closed). This is the runtime side of V2.0
+// governance: a guard (tools.guard / tools/pre-execute) calls matchProtected(path)
+// and denies matching writes.
+
+import { BASELINE_PROTECTED_PATHS, effectiveProtectedPaths } from './cq-baseline.mjs'
 
 // Supported patterns:
 //   preset/**       -> path starts with "preset/"
@@ -34,21 +37,23 @@ function patternMatches(pattern, normalizedPath) {
 }
 
 export function loadProtectedPaths(policyDir = '.cq/policy') {
-  const file = resolve(policyDir, 'protected-paths.yml')
-  let text
-  try { text = readFileSync(file, 'utf8') }
-  catch { return { error: `cannot read ${file}`, patterns: [] } }
-  const patterns = []
-  for (const line of text.split(/\r?\n/)) {
-    const m = line.match(/^\s*-\s+"([^"]+)"\s*$/)
-    if (m) patterns.push(m[1])
-  }
-  return { patterns, file }
+  // Baseline always applies; project may add. Missing project file is not an error
+  // (baseline keeps the floor) — this is the fail-closed baseline guarantee.
+  let project = []
+  try {
+    const file = resolve(policyDir, 'protected-paths.yml')
+    const text = readFileSync(file, 'utf8')
+    for (const line of text.split(/\r?\n/)) {
+      const m = line.match(/^\s*-\s+"([^"]+)"\s*$/)
+      if (m) project.push(m[1])
+    }
+  } catch { /* project missing: baseline alone still protects */ }
+  const patterns = effectiveProtectedPaths(project)
+  return { patterns, baseline: BASELINE_PROTECTED_PATHS, project, error: null }
 }
 
 export function matchProtected(path, policyDir = '.cq/policy') {
-  const { patterns, error } = loadProtectedPaths(policyDir)
-  if (error) return { protected: false, error, matchedPattern: null, patterns: [] }
+  const { patterns } = loadProtectedPaths(policyDir)
   const normalized = String(path || '').replaceAll('\\', '/')
   for (const pattern of patterns) {
     if (patternMatches(pattern, normalized)) {

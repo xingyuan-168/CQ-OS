@@ -19,6 +19,7 @@ title: Technical Debt
 - **V2.0 阶段5 进展**：`.cq/policy/` 基准结构（policy/roles/protected-paths/gates）+ `tools/cq-policy.mjs` fail-closed 校验器 + `tools/test-cq-policy.mjs` 已落地并提交（842ea57）。
 - **V2.2 阶段3 进展**：`.cq/routemap.yml` 模型路由映射声明 + `tools/cq-routemap.mjs` 结构性校验器 + 测试已落地并提交（97f2f01）；真实模型池依赖 DSH settings（非 CQ OS 源码）。
 - **V2.3 阶段4 进展**：`tools/test-cq-plugin-e2e.mjs` 端到端（validate+compose+host-plane 拒绝）已落地（4b18cd1）；真实挂载验证确认 cq-os 组合在真实 cq-os agent scope `standingKeyFor` 通过、`composed=cq-os`。
+- **Governance 正式接入 PoC（步骤1）**：standing + Core 两层 guard 拦截验证通过（guard 在真实 cq-os agent scope 注册成功，preset/policy/env/credentials/dsh 受保护路径全命中 deny，src/docs 放行）；spawned 角色层由 `tools.guard` 的 agent-chain 语义（`guardReason` 沿 exec.agent 链查）保证，端到端留到步骤 5 对抗测试；DSH CLI 有官方 `dsh plugin --profile` 依赖管理机制（步骤 3 实测 bare package resolution）。
 
 ## Deferred
 

@@ -13,9 +13,10 @@ for (const p of mustAllow) {
   if (r.protected) throw new Error(`expected allowed, got protected: ${p} (matched=${r.matchedPattern})`)
 }
 
-// Missing policy dir fails closed (protected=false + error, never silently allows a protected path).
+// Missing project policy file: baseline still protects (fail-closed — baseline is
+// the non-relaxable floor, never dropped). A protected path must still be denied.
 const missing = matchProtected('preset/x', 'nonexistent-policy-dir')
-if (missing.protected) throw new Error('missing policy must not protect (but must not claim protected either)')
-if (!missing.error) throw new Error('missing policy must surface an error')
+if (!missing.protected) throw new Error('missing project policy must still deny baseline-protected paths (fail-closed baseline)')
+if (!missing.patterns.some((p) => p === 'preset/**')) throw new Error('baseline preset/** must remain in effective paths')
 
-console.log(JSON.stringify({ ok: true, protect: mustProtect.length, allow: mustAllow.length, failClosed: true }))
+console.log(JSON.stringify({ ok: true, protect: mustProtect.length, allow: mustAllow.length, baselineFailClosed: true }))
