@@ -2,7 +2,7 @@
 id: progress
 type: progress
 status: active
-updatedAt: 2026-08-26T21:52:47+08:00
+updatedAt: 2026-08-27T08:49:35+08:00
 commit: 1c3a77997638984b7152273030f2a7c8a8b5e25b
 title: Progress
 ---
@@ -19,6 +19,7 @@ title: Progress
 - `standingKeyFor('cq-os')` 真挂载验证成功。
 - Git commit、`v0.1.0` tag 和 GitHub 远端推送完成。
 - 狗粮课题：CQ Memory schema 一次性迁移完成（五阶段治理 + Human Gate + Review 落盘 + Git v0.2.0 闭环）。
+- DSH 部署配置（`~/.dsh/settings.yaml`，非 Git 跟踪）：`llm-pi-ai.providers.hs`（火山方舟 Agent Plan，`https://ark.cn-beijing.volces.com/api/plan/v3`，凭据 `HS_API_KEY`）已配置 DeepSeek V4 Flash 与 V4 Pro 两个模型（1M 上下文/384K 输出，推理档位 off/high/max，deepseek 方言 compat），供模型选择器选用；默认路由未改动。
 
 ## V1 Status
 
