@@ -2,8 +2,8 @@
 id: tech-debt
 type: tech-debt
 status: open
-updatedAt: 2026-08-26T14:32:31+08:00
-commit: a530bf346b82576cd86bc6e9a16c3026fe95c1e5
+updatedAt: 2026-08-28T15:20:00+08:00
+commit: c27301a897555f25e4032cf9374b6f904c3bf46c
 title: Technical Debt
 ---
 

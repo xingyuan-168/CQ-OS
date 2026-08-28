@@ -3,7 +3,7 @@ id: exec-2026-08-28-p4-user-validation
 type: execution-summary
 status: completed
 updatedAt: 2026-08-28T15:20:00+08:00
-commit: PLACEHOLDER_C2_BACKFILL
+commit: c27301a897555f25e4032cf9374b6f904c3bf46c
 title: P4 用户实测（整体测试 + 如实记录）→ PARTIAL，未 VERIFIED
 tags: [p4, user-validation, governance, maintenance, deadname, canonical]
 agent: CQ Core
