@@ -9,3 +9,6 @@ node_modules/
 
 # P4 test artifacts (Tester sandbox output)
 .tmp/
+
+# CodeBuddy IDE data directory (not source)
+.codebuddy/
