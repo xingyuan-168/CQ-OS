@@ -3,7 +3,7 @@ id: adr-0025-governance-runtime-enforcement
 type: decision
 status: accepted
 updatedAt: 2026-08-28T10:00:00+08:00
-commit: null
+commit: 88b0926576cd97a8d46bf2e22378f8d5e1860395
 title: ADR-0025: @cq/governance 运行时强制升级（Runtime-Enforcement Upgrade）
 tags: [governance, runtime, maintenance, adr]
 ---

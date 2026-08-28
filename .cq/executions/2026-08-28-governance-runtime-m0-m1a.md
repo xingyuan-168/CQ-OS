@@ -3,7 +3,7 @@ id: exec-2026-08-28-governance-runtime-m0-m1a
 type: execution-summary
 status: in-progress
 updatedAt: 2026-08-28T09:30:00+08:00
-commit: null
+commit: 88b0926576cd97a8d46bf2e22378f8d5e1860395
 title: Governance Runtime 落地 M0+M1a（Loop Breaker + fail-closed）
 tags: [governance, loop-breaker, fail-closed, maintenance]
 agent: CQ Core
