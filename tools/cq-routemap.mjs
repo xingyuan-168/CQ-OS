@@ -42,26 +42,30 @@ export function validateRouteMap(filePath, knownProviders = KNOWN_PROVIDERS) {
   if (!/^\s*schemaVersion:\s*1\s*$/m.test(text)) errors.push('routemap: schemaVersion must be 1')
 
   const parsed = parse(text)
-  // Top-level default must exist and have provider/model/reason.
-  for (const key of REQUIRED_KEYS) {
-    if (!parsed.sections.default?.[key]) errors.push(`routemap: default.${key} missing`)
-  }
-  // Each byRole / byComplexity route entry must have the required keys.
-  for (const section of ['byRole', 'byComplexity']) {
-    const block = parsed.sections[section]
-    if (!block) { errors.push(`routemap: ${section} section missing`); continue }
+
+  // parse() flattens nested role keys to top-level sections, so every route
+  // entry (default / byRole.* / byComplexity.*) is a section that carries a
+  // provider. Validating via the parsed structure is indentation-independent:
+  // the previous line-based regex (^\s{4}provider:) only matched 4-space indents
+  // and silently skipped the `default` entry (2-space), so unknown default
+  // providers passed and any indent deviation escaped detection.
+  if (!parsed.sections.default) errors.push('routemap: default section missing')
+  if (!parsed.sections.byRole && !parsed.sections.byComplexity) {
+    errors.push('routemap: need at least one of byRole/byComplexity')
   }
 
-  // Determine entries: approximate by key blocks in text.
-  const entries = text.match(/(byRole|byComplexity):\s*$/m) ? true : false
-  // Collect each route's provider by scanning provider: lines.
-  const providerLines = [...text.matchAll(/^\s{4}provider:\s*(\S+)\s*$/gm)].map((m) => m[1])
-  const modelLines = [...text.matchAll(/^\s{4}model:\s*(\S+)\s*$/gm)].map((m) => m[1])
-  for (const p of providerLines) {
-    if (!knownProviders.includes(p)) errors.push(`routemap: provider "${p}" not in known provider list (${knownProviders.join(', ')})`)
+  const routeSections = Object.entries(parsed.sections).filter(([, v]) => v && v.provider)
+  if (routeSections.length === 0) errors.push('routemap: no route entries declared')
+
+  for (const [name, v] of routeSections) {
+    for (const key of REQUIRED_KEYS) {
+      if (!v[key]) errors.push(`routemap: ${name}.${key} missing`)
+    }
+    const p = v.provider
+    if (p && !knownProviders.includes(p)) {
+      errors.push(`routemap: provider "${p}" not in known provider list (${knownProviders.join(', ')})`)
+    }
   }
-  if (modelLines.length === 0) errors.push('routemap: no models declared')
-  if (providerLines.length === 0) errors.push('routemap: no providers declared')
 
   return { valid: errors.length === 0, errors }
 }

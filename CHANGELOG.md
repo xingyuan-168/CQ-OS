@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 — Finalization (post-hardening polish)
+
+- 路由图校验器（`tools/cq-routemap.mjs`）改为基于 `parse()` 的缩进无关校验，并新增对 `default` 入口 provider 的校验；此前 `default`（2 空格缩进）被精确缩进正则静默跳过，未知 provider 可被放过。新增对真实 `.cq/routemap.yml` 的回归校验（`tools/test-cq-routemap.mjs` 及 `test-all`）。
+- 统一 `BASELINE_ROLES` 单一来源：删除 `tools/cq-baseline.mjs` 中不完整（仅 developer/review）且未被任何调用方使用的副本，权威来源为 `preset/plugins/cq-governance/lib/policy.js`（含 core 的完整 10 角色基线）。
+- Persona（`preset/agent.cordis.yml`）更新：移除 "path and duty restrictions remain soft until the future CQ Governance Plugin" 等过时措辞，反映 `@cq/governance` 已运行时强制（fail-closed 三态，canonical Layer2 已落地）；`enforceRoles` 与 model change 标注为已登记 gap。
+- 文档与实现对齐：`README.md`（B1–B5 / "后续阶段"）与 `docs/requirements-analysis.md` 更新，反映治理/RBAC、结构化记忆、插件契约、模型路由已落地；`docs/architecture-design.md` 经核查无"后续阶段"措辞，无需改动。
+- 修复 `tools/cq-security-check.mjs`：`available` 数组此前从未被填充，现真实反映已安装扫描器。
+- 修复 `tools/cq-project-init.mjs`：复制源路径双重前缀（`templates/project-init/` 重复拼接）导致真实初始化失败；嵌套目标目录（如 `docs/README.md`）复制前未创建父目录导致 ENOENT。真实初始化（含 `git init`）现已可用。
+- 测试覆盖补齐：新增 `test-cq-maint-preflight.mjs`、`test-cq-memory-query.mjs`、`test-cq-project-init.mjs`、`test-cq-route-audit.mjs`、`test-cq-security-check.mjs`；`test-all` 统一入口现有 21 项，0 致命失败。
+- 状态：代码+测试全绿；`security-check` 与 `maint-preflight` 仍为非致命（依赖实时部署目录与 git 状态，其专项 schema 测试均通过）。
+
 ## 0.3.0 — Beta Automated Hardening
 
 > 源 review：`docs/reviews/CQ_OS_当前阶段修复清单_Governance_Maintenance_V2.md`

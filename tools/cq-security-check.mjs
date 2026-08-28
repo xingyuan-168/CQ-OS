@@ -46,6 +46,7 @@ const results = []
 let findings = 0
 for (const c of candidates) {
   if (c.has()) {
+    available.push(c.name)
     const r = c.run()
     const clean = r.ok || /0 vulnerabilities|no known vulnerabilities|No issues|No vulnerabilities found/i.test(r.out)
     if (!clean) findings += 1

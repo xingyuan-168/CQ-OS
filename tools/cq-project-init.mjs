@@ -68,10 +68,10 @@ const ciSrc = join(TEMPLATE, 'ci', '.github', 'workflows', 'ci.yml')
 
 const plan = []
 for (const [rel, tmpl] of Object.entries(files)) {
-  if (tmpl && existsSync(join(TEMPLATE, tmpl))) plan.push({ file: rel, source: `templates/project-init/${tmpl}` })
+  if (tmpl && existsSync(join(TEMPLATE, tmpl))) plan.push({ file: rel, source: tmpl })
   else if (rel === '.cq/project.md') plan.push({ file: rel, source: 'generated' })
 }
-plan.push({ file: 'ci/.github/workflows/ci.yml', source: 'templates/project-init/ci/.github/workflows/ci.yml' })
+plan.push({ file: 'ci/.github/workflows/ci.yml', source: 'ci/.github/workflows/ci.yml' })
 
 if (opts.dryRun) {
   console.log(JSON.stringify({ ok: true, dryRun: true, target, name, files: plan.map((p) => p.file) }, null, 2))
@@ -84,7 +84,8 @@ for (const p of plan) {
   if (p.source === 'generated') {
     writeOut(dst, `---\nid: project\ntype: project\nstatus: active\ntitle: ${name}\n---\n\n# ${name}\n`)
   } else {
-    copyFileSync(join(TEMPLATE, p.source === 'templates/project-init/ci/.github/workflows/ci.yml' ? ciSrc : p.source), dst)
+    mkdirSync(resolve(dst, '..'), { recursive: true })
+    copyFileSync(join(TEMPLATE, p.source), dst)
   }
   created.push(p.file)
 }
