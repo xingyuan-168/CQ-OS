@@ -30,6 +30,8 @@ const dead = run(['node', join('tools', 'check-toolfilter-deadnames.mjs'), join(
 rows.push({ item: 'deadnames(cq-os+maint)', pass: dead.pass, info: false })
 const init = run(['node', join('tools', 'cq-project-init.mjs'), '--target', join(process.env.TEMP || '.', 'cq-test-all-dry'), '--name', 'test', '--dry-run'])
 rows.push({ item: 'project-init(dry-run)', pass: init.pass, info: false })
+const route = run(['node', join('tools', 'cq-routemap.mjs'), join('.cq', 'routemap.yml')])
+rows.push({ item: 'routemap(.cq real)', pass: route.pass, info: false })
 const security = run(['node', join('tools', 'cq-security-check.mjs')])
 rows.push({ item: 'security-check', pass: security.pass, info: true })
 const preflight = run(['node', join('tools', 'cq-maint-preflight.mjs'), '--skip-tests'])

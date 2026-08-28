@@ -15,11 +15,9 @@ export const BASELINE_PROTECTED_PATHS = [
   '.dsh/**',            // DSH settings/home
 ]
 
-export const BASELINE_ROLES = {
-  developer: { canWrite: true, canExecuteCommand: true, cannot: ['modify-governance-rules', 'delete-core-data', 'modify-production'] },
-  review: { canWrite: false, canExecuteCommand: false },
-  // other roles may be tightened by project policy; baseline sets only the floor
-}
+// Role-level baseline (BASELINE_ROLES) is the single source of truth in
+// preset/plugins/cq-governance/lib/policy.js — do not redefine roles here, to
+// avoid drift between the path floor (this file) and the role floor (policy.js).
 
 // Merge baseline + project protected paths into the effective set (union of denials).
 // Project may add paths; it may not remove baseline paths. Returns the effective list.

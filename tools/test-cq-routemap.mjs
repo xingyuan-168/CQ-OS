@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -28,14 +29,14 @@ byComplexity:
     reason: low
 `
 
-// valid
+// valid (4-space byRole entries, 2-space default)
 const okDir = await mkdtemp(join(tmpdir(), 'cq-route-ok-'))
 const okFile = join(okDir, 'routemap.yml')
 await writeFile(okFile, VALID)
 const ok = validateRouteMap(okFile, ['zai-coding-cn'])
 if (!ok.valid) throw new Error(`valid routemap rejected: ${ok.errors.join('; ')}`)
 
-// fail-closed: unknown provider
+// fail-closed: unknown provider in a byRole entry
 const badDir = await mkdtemp(join(tmpdir(), 'cq-route-bad-'))
 const badFile = join(badDir, 'routemap.yml')
 await writeFile(badFile, VALID.replaceAll('zai-coding-cn', 'unknown-provider'))
@@ -49,7 +50,22 @@ await writeFile(laxFile, VALID.replace('schemaVersion: 1\n', ''))
 const lax = validateRouteMap(laxFile, ['zai-coding-cn'])
 if (lax.valid || !lax.errors.some((e) => e.includes('schemaVersion'))) throw new Error('missing schemaVersion was not rejected')
 
-console.log(JSON.stringify({ ok: true, checks: 3 }))
+// fail-closed: unknown provider in the default entry (2-space, was silently skipped before)
+const defDir = await mkdtemp(join(tmpdir(), 'cq-route-def-'))
+const defFile = join(defDir, 'routemap.yml')
+await writeFile(defFile, VALID.replace('provider: zai-coding-cn', 'provider: unknown-provider'))
+const def = validateRouteMap(defFile, ['zai-coding-cn'])
+if (def.valid || !def.errors.some((e) => e.includes('unknown-provider'))) throw new Error('unknown default provider was not rejected')
+
+// indentation-independent: deeply nested (uniformly +4 spaces) must still validate
+const deep = VALID.replace(/^  /gm, '      ')
+const deepDir = await mkdtemp(join(tmpdir(), 'cq-route-deep-'))
+const deepFile = join(deepDir, 'routemap.yml')
+await writeFile(deepFile, deep)
+const deepRes = validateRouteMap(deepFile, ['zai-coding-cn'])
+if (!deepRes.valid) throw new Error(`deeply-indented routemap rejected: ${deepRes.errors.join('; ')}`)
+
+console.log(JSON.stringify({ ok: true, checks: 5 }))
 
 const rm = await import('node:fs/promises')
-for (const d of [okDir, badDir, laxDir]) await rm.rm(d, { recursive: true, force: true })
+for (const d of [okDir, badDir, laxDir, defDir, deepDir]) await rm.rm(d, { recursive: true, force: true })

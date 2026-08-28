@@ -13,7 +13,7 @@ CQ OS（苍穹模式）是 DSH 的第五种用户 Agent 模式，目标是让 AI
 - 角色工具硬隔离，角色不得二次调度或修改运行时
 - `.cq/` 提炼式工程记忆
 - 新项目启动、前端设计确认、版本和交付治理
-- 模型动态路由、硬策略 RBAC、第三方插件标准和结构化记忆列为后续阶段
+- 模型动态路由、硬策略 RBAC（`@cq/governance` 运行时强制）、第三方插件标准和结构化记忆已实现（见 B2–B5）
 
 ## Git
 
@@ -27,10 +27,10 @@ V2 的任何能力必须先完成成熟开源项目或官方生态调研，再�
 
 V2 计划见 [`docs/v2-plan.md`](docs/v2-plan.md)。
 
-## 后续任务
+## 能力状态（B1–B5）
 
-- B1：CQ OS Runtime 默认不具备 Runtime 自修改能力；永久变更必须修改 Git 仓库 `preset/` 后重新部署。`cq-os-maint` 维护模式已存在（见 `preset/maintenance/`），用于受控维护与升级。
-- B2：CQ Governance Plugin，优先复用 DSH guard/approval/sandbox，再评估 OPA、Cedar、Casbin、Cerbos
-- B3：第三方插件标准，优先复用 DSH loader、npm metadata、SemVer、Backstage/VS Code/MCP 等成熟契约
-- B4：模型动态路由，优先复用 DSH provider/model、retry 和成熟路由项目，并核验子 Agent 实际请求模型
-- B5：结构化 CQ Memory，优先复用 Git-backed Markdown、SQLite/FTS 和成熟 Memory 项目
+- B1：CQ OS Runtime 默认不具备 Runtime 自修改能力；永久变更必须修改 Git 仓库 `preset/` 后重新部署。`cq-os-maint` 维护模式（见 `preset/maintenance/`）已用于受控维护与升级。
+- B2：CQ Governance Plugin（`@cq/governance`）已挂载并运行时强制路径/角色 RBAC（fail-closed 三态，canonical Layer2）；`enforceRoles` 当前默认关闭，列为已登记 gap。
+- B3：第三方插件标准已落地：`preset/plugins/` 契约 + `tools/cq-plugin-validate.mjs` 校验（复用 DSH loader / npm metadata / SemVer / MCP 等成熟契约）。
+- B4：模型动态路由已实现：`.cq/routemap.yml` + `tools/cq-routemap.mjs` 校验；按复杂度/角色动态选模型的智能路由列为已登记 gap（DEFERRED WITH ADR）。
+- B5：结构化 CQ Memory 已实现：`.cq/` 提炼式记忆 + `tools/cq-memory-*.mjs`（Git-backed Markdown）。
