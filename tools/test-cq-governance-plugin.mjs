@@ -1,4 +1,7 @@
-import { apply } from '../preset/plugins/cq-governance/lib/index.js'
+import { apply } from '../preset/plugins/cq-governance/lib/core.js'
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 // Build a fake ctx that captures the registered guard, and a fake tools stub.
 function makeCtx() {
@@ -40,4 +43,23 @@ function makeCtx() {
   if (!deny('.dsh/settings.yaml')) throw new Error('maintenance: .dsh must still be denied')
 }
 
-console.log(JSON.stringify({ ok: true, runtime: 'strict', maintenance: 'elevated-not-anarchy', checks: 2 }))
+// Fail-closed three-state: ABSENT → baseline only; INVALID → throw (never degrade).
+{
+  // ABSENT policy dir → baseline still protects preset/** (no throw).
+  const absent = join(tmpdir(), 'cq-governance-absent-' + Date.now())
+  const a = makeCtx()
+  apply(a.ctx, { mode: 'runtime', policyDir: absent })
+  if (!a.getGuard()({ name: 'write', arguments: { path: 'preset/x' } })) throw new Error('failclosed: absent policy must still protect preset/**')
+
+  // INVALID (present but malformed) → must throw (fail-closed), not degrade to baseline.
+  const badDir = mkdtempSync(join(tmpdir(), 'cq-governance-invalid-'))
+  writeFileSync(join(badDir, 'protected-paths.yml'), 'this is not: [valid\n  yaml: [\n')
+  let threw = false
+  try {
+    apply(makeCtx().ctx, { mode: 'runtime', policyDir: badDir })
+  } catch { threw = true }
+  rmSync(badDir, { recursive: true, force: true })
+  if (!threw) throw new Error('failclosed: malformed policy must throw, not degrade to baseline')
+}
+
+console.log(JSON.stringify({ ok: true, runtime: 'strict', maintenance: 'elevated-not-anarchy', failClosed: 'absent-vs-invalid', checks: 3 }))

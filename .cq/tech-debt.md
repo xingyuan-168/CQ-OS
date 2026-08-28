@@ -25,8 +25,17 @@ title: Technical Debt
 
 ## Deferred
 
-- B1: 稳定后评估关闭日常 Cordis 自修改能力，仅维护/升级状态启用。
+- B1: 日常 CQ OS Runtime 已不挂 tool-cordis（自修改能力默认关闭，非"待关闭"）；cq-os-maint 维护模式已存在，Cordis 权限在维护模式单独设计（见 preset/maintenance/）。
 - B2: CQ Governance Plugin，硬策略和路径级 RBAC。
 - B3: 第三方插件标准。
 - B4: 动态模型路由，并核验子 Agent 实际请求模型。
 - B5: 宿主级或结构化 Memory 存储。
+
+## Loop Breaker
+
+- 规则层 LOOP_BREAKER 已落地（cq-lifecycle/cq-governance skill + Core/maint persona）：同工具同参 ≤1 次、等价目标 ≤2 次、无新信息即 BLOCKED。Runtime 工具级 Loop Counter 后置（待 Governance 稳定计数能力）。
+
+## Runtime Gaps
+
+- **NATIVE_SUBPATH_ENFORCEMENT_GAP (A2)** — open：DSH 沙箱只能表达整工作区根级写白名单（read-only|workspace-write|danger-full-access），无法表达"工作区内 preset/** 等子路径只读"。工具层 guard/pre-execute 是 containment 而非内核安全边界；shell 子路径强制不可达，由角色 shell 门禁 + 沙箱 containment + 本记录兜底。影响：受保护子路径对 shell 写只能字面近似拦截。
+- **ROLE_IDENTITY_ASSOCIATION_GAP** — open：exec.agent 无机器可读角色名，roleRegistry 依赖 spawn toolName 与 subagent/start 的 FIFO 关联，任何模糊→UNKNOWN→deny-default。关联可靠性需 P4 真实会话验证后才允许开启 enforceRoles。影响：角色级 pre-execute 门禁默认关闭，权威层暂为 spawn toolFilter。

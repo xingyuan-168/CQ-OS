@@ -10,7 +10,7 @@ title: CQ OS 项目背景
 # CQ OS 项目背景
 
 - 目标：成为 DSH 第五种用户 Agent 模式，形成 AI 软件工程组织。
-- 当前版本：0.1.0
+- 当前版本：0.2.0（Governance + Maintenance 收口中）
 - 源码：工作区 Git 仓库的 `preset/`
 - 部署：DSH 用户预设目录中的 `cq-os`，仅为部署产物
 - 范围：DSH 原生预设、九个专业子 Agent、治理技能、CQ Memory、真实人机确认

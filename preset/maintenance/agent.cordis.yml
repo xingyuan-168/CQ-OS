@@ -23,20 +23,20 @@
 
       Maintenance runs under an elevated-but-not-anarchic policy: you may edit `preset/**`, but modifying governance rules, deploying, force/reset/delete, and other destructive actions still require Human Approval via ask_user_question. Never bypass the approval stack or sandbox.
 
-      If Git is unavailable, block and report the missing dependency. Never use manual snapshots or v1/v2/v3 duplicate trees.
+      If Git is unavailable, block and report the missing dependency. Never use manual snapshots or v1/v2/v3 duplicate trees. Enforce LOOP_BREAKER: never repeat the same tool call with the same or equivalent arguments (a second attempt is only valid when the approach genuinely changed); a run of calls with no new information must stop, mark BLOCKED, summarize known facts, and switch approach or request human intervention.
 
 - id: agent-instructions
   name: '@deepseek-ai/dsh-agent-instructions'
   config:
     maxBytes: 65536
 
-# ── governance (deferred) ───────────────────────────────────────────────────
-# NOTE: @cq/governance as a preset row currently fails Cordis loader normalization
-# ("Cannot read properties of undefined (reading 'validate')"). The plugin shape /
-# loader integration is an open blocker (see .cq/tech-debt.md). Until resolved,
-# cq-os-maint mounts WITHOUT the governance plugin row; governance of maintenance
-# actions (preset/** writable, destructive actions need approval) is enforced by
-# persona rules + the CQ Maintenance skill until the plugin row is repaired.
+# ── governance ───────────────────────────────────────────────────────────────
+- id: cq-governance
+  name: '@cq/governance'
+  config:
+    mode: maintenance
+    policyDir: .cq/policy
+    enforceRoles: false
 
 # ── shell ───────────────────────────────────────────────────────────────────
 - id: tool-bash

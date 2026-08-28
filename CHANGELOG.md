@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — Governance Runtime Enforcement (pre-P4)
+
+- LOOP_BREAKER 规则层落地（cq-lifecycle/cq-governance skill + Core/maint persona + tech-debt）：同工具同参 ≤1 次、等价目标 ≤2 次、无新信息即 BLOCKED。
+- @cq/governance 运行时强制升级（ADR-0025）：双钩子（guard 单调 deny + pre-execute allow/deny/ask，ask 路由 approval seam、无 seam 退化 deny）；fail-closed 三态（absent≠invalid）；shell 保守字面匹配（非 parser）；roles/gates/policy 消费；maintenance 模式提升 preset/** 可写、治理文件/部署/force/reset 仍 ask；A2 gap（沙箱子路径只读）三处登记。
+- 模块拆分（policy/roles/core 零依赖 + index 保留 schemastery Config）使干净克隆可跑纯逻辑测试。
+- 组合接入：cq-os 与 cq-os-maint 均加 @cq/governance 行；tester deny 增 write/edit；product/research/ux/ui deny 增 bash。
+- gates.yml 增 dangerous-ops、governance-rule-change；tech-debt 登记 NATIVE_SUBPATH_ENFORCEMENT_GAP (A2) 与 ROLE_IDENTITY_ASSOCIATION_GAP。
+- 测试：新增 test-cq-governance-policy.mjs（10 类零依赖用例）；全套回归 10/10；Tester 独立复验 all-pass。
+- 状态：代码+部署+Tester 全绿；standingKeyFor 与真实会话对抗（P4）待用户实测；Hard Governance 暂为 PARTIAL，P4 通过后再 tag v0.3.0 并标 VERIFIED。
+
 ## 0.2.0
 
 - CQ Memory schema 一次性迁移（狗粮课题）完成：5 个记忆文件补 front matter、索引器 skip 名单修正（selfcheck/review）、签署 ADR-0024、索引 5/0 → 7/0 幂等重建、回归全过。

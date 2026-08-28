@@ -26,7 +26,8 @@ title: Progress
 - V1 源码、部署、`standingKeyFor('cq-os')` 真挂载和 Git v0.1.0 已完成。
 - 已完成 P0–P2 收口修复：清理 8 角色 toolFilter 死名、修正 Workflow 绕过角色与结果传递、补失败恢复规则、补 Research 开源评估字段、Memory schema 迁移规则、project-init 骨架、统一 Cordis 自修改描述、校正 V2 进度标记。
 - 新增死名扫描回归防护 `tools/check-toolfilter-deadnames.mjs`（`agent.cordis.yml` 扫描为 `dead: []`）。
-- 新苍穹模式会话工具目录、Gate A、Gate B、9 角色 smoke test 仍需用户在 Web GUI 实测。
+- **Governance Runtime（ADR-0025，本轮）**：LOOP_BREAKER 规则层 + @cq/governance 双钩子运行时强制（guard 单调 deny + pre-execute allow/deny/ask）+ fail-closed 三态 + shell 保守字面匹配 + roles/gates/policy 消费 + maintenance 模式；模块拆分（policy/roles/core 零依赖）；cq-os 与 cq-os-maint 均接入 governance 行；tester deny write/edit、4 角色 deny bash；gates 增 dangerous-ops/governance-rule-change；A2/ROLE_IDENTITY gap 登记。代码+部署+Tester(10/10) 全绿。
+- **待 P4 用户实测**：standingKeyFor('cq-os'/'cq-os-maint')、新会话对抗（fs/bash/pwsh/symlink/.env 等，A2 项标 BLOCKED）、9 角色 smoke、Gate A/B、cq-os-maint 升级狗粮。P4 通过后 tag v0.3.0 并标 VERIFIED；当前 Hard Governance = PARTIAL。
 
 ## V2 Current
 

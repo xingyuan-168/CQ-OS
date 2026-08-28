@@ -44,6 +44,17 @@ CQ OS 自身版本在 `.cq/versions/<版本>.md` 记录。除主版本外，明�
 5. 破坏性操作或多次恢复失败 → 请求人工介入。
 6. 所有恢复动作写入 `.cq/`，关联任务与 commit。
 
+## 工具循环熔断（LOOP_BREAKER）
+
+为防止 Tool / Reasoning 无界循环，必须遵守：
+
+1. 相同工具 + 相同参数：最多执行 1 次，禁止重复。
+2. 相同目标 + 等价参数：最多 2 次，且第二次必须是"方案真正发生变化"的重试。
+3. 连续多次工具调用没有新增信息：立即判定 `LOOP_BREAKER_TRIGGERED`，停止工具调用。
+4. 触发后：停止继续调用工具 → 状态 BLOCKED → 总结已知事实 → 根因分析 → 换方案 → 必要时 Human Intervention。
+
+禁止无新信息的重复 read/grep/open。
+
 ## V0.1 后置任务
 
 - B1：CQ OS Runtime 默认不具备 Runtime 自修改能力。永久变更必须修改 Git 仓库 `preset/` 后重新部署。未来若确有需要，新增独立 `cq-os-maint` Maintenance Mode，用于受控维护和升级。

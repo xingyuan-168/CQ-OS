@@ -17,7 +17,7 @@ CQ OS 维护模式（cq-os-maint）只负责维护 CQ OS 自身：升级、修�
 - **不挂 tool-cordis**（进程全局 Inspect Provider 冲突）。维护用窄权限能力，不给完整运行时自修改。
 - 维护模式策略是"提升但非无政府"：可写 `preset/**`，但改治理规则、部署、force/reset/delete 等破坏性动作**必须 Human Approval**（`ask_user_question`）。
 - Git 不可用时阻塞并报告；禁止手工快照或 v1/v2/v3 重复目录。
-- 完成后卸载/退出，日常 cq-os 不受影响。
+- cq-os-maint 可常驻定义：维护完成只退出 Maintenance Session，不删除维护模式；日常 cq-os 不受影响。
 
 ## 升级流程
 
