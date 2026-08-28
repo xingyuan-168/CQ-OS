@@ -43,7 +43,9 @@ export function createRoleRegistry() {
     // Any ambiguity -> UNKNOWN. Returns the resolved role (or UNKNOWN).
     correlateStart(payload) {
       try {
-        const childSessionId = payload?.childSessionId ?? payload?.sessionId
+        // `subagent/start` listener receives the identity object whose `info.id`
+        // is the child session/agent id (confirmed: dsh-tool-cordis index.js:4230).
+        const childSessionId = payload?.id ?? payload?.info?.id ?? payload?.childSessionId ?? payload?.sessionId
         // More than one pending unconsumed spawn => FIFO order is unreliable.
         if (queue.length > 1) {
           queue.length = 0 // drop the stale queue; everything is UNKNOWN now
@@ -68,7 +70,7 @@ export function createRoleRegistry() {
         const depth = agent.delegationDepth
         const isRoot = depth === 0 || (depth == null && agent.root === true)
         if (isRoot) return 'core'
-        const sessionId = agent.sessionId ?? agent.id
+        const sessionId = agent?.session?.header?.id ?? agent?.sessionId ?? agent?.id
         if (sessionId == null) return UNKNOWN
         const role = sessionToRole.get(sessionId)
         return role === undefined ? UNKNOWN : role

@@ -57,6 +57,82 @@ export const GOVERNANCE_RULE_PATHS = [
   'preset/agent.cordis.yml',
 ]
 
+// Baseline role capabilities (V2 P0-5/P0-6): the non-relaxable role floor.
+// Project roles.yml may only TIGHTEN these (booleans: Baseline && Project;
+// cannot: Baseline ∪ Project). `core` is included so enforceRoles:true cannot
+// lock the coordinator out of its own capabilities.
+export const BASELINE_ROLES = {
+  core: { canWrite: true, canExecuteCommand: true, cannot: ['modify-governance-rules', 'delete-core-data', 'modify-production'] },
+  product: { canWrite: true, canExecuteCommand: false, cannot: [] },
+  research: { canWrite: true, canExecuteCommand: false, cannot: [] },
+  ux: { canWrite: true, canExecuteCommand: false, cannot: [] },
+  ui: { canWrite: true, canExecuteCommand: false, cannot: [] },
+  architect: { canWrite: true, canExecuteCommand: true, cannot: [] },
+  developer: { canWrite: true, canExecuteCommand: true, cannot: ['modify-governance-rules', 'delete-core-data', 'modify-production'] },
+  tester: { canWrite: false, canExecuteCommand: true, cannot: [] },
+  devops: { canWrite: true, canExecuteCommand: true, cannot: [] },
+  review: { canWrite: false, canExecuteCommand: false, cannot: [] },
+}
+
+// Baseline gates (V2 P0-7): project may add approval requirements but cannot
+// cancel a baseline approval. These gates always require approval.
+export const BASELINE_GATES = ['production-release', 'dangerous-ops', 'governance-rule-change']
+
+// Monotonic role merge (V2 P0-6). Project may only tighten:
+//   canWrite / canExecuteCommand : Baseline && (Project !== false)
+//                                 -> project can lower to false, never raise
+//   cannot                       : Baseline ∪ Project
+export function effectiveRoles(projectRoles = {}) {
+  const out = {}
+  for (const [role, base] of Object.entries(BASELINE_ROLES)) {
+    const proj = projectRoles[role] || {}
+    out[role] = {
+      canWrite: base.canWrite && proj.canWrite !== false,
+      canExecuteCommand: base.canExecuteCommand && proj.canExecuteCommand !== false,
+      cannot: [...new Set([...(base.cannot || []), ...(proj.cannot || [])])],
+    }
+  }
+  return out
+}
+
+// Monotonic gate merge (V2 P0-7): baseline gates always present (an approval
+// cannot be cancelled); project gates are added on top.
+export function effectiveGates(projectGates = {}) {
+  const out = {}
+  for (const name of BASELINE_GATES) {
+    out[name] = projectGates[name] || { description: `baseline gate: ${name}`, tool: 'ask_user_question' }
+  }
+  for (const [name, g] of Object.entries(projectGates || {})) {
+    if (!out[name]) out[name] = g
+  }
+  return out
+}
+
+// Load policy.yml (V2 P0-8): the runtime-level switches. Absent -> baseline
+// defaults (defaultDeny=true, failClosed=true). Present but malformed -> throw.
+export function loadPolicy(policyDir) {
+  const file = join(policyDir, 'policy.yml')
+  let text
+  try {
+    text = readFileSync(file, 'utf8')
+  } catch (err) {
+    if (err && err.code === 'ENOENT') return { defaultDeny: true, failClosed: true, policyVersion: null }
+    throw new Error(`governance: policy.yml exists but cannot be read (${file}): ${err.message}`)
+  }
+  if (!/^\s*schemaVersion:\s*1\s*$/m.test(text)) {
+    throw new Error(`governance: policy.yml invalid (missing schemaVersion: 1) at ${file}`)
+  }
+  const pick = (key) => {
+    const m = new RegExp(`^\\s*${key}:\\s*(true|false)\\s*$`, 'm').exec(text)
+    return m ? m[1] === 'true' : undefined
+  }
+  return {
+    defaultDeny: pick('defaultDeny'),
+    failClosed: pick('failClosed'),
+    policyVersion: 1,
+  }
+}
+
 // Normalize a path: backslashes -> forward slashes, collapse repeated slashes.
 // No tokenization / variable expansion (that would be a shell parser — banned).
 export function normalizePath(value) {

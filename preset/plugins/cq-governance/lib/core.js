@@ -1,20 +1,31 @@
 // @cq/governance — runtime-enforcement assembly. Zero external dependencies.
 //
-// ADR-0025. Assembles the two enforcement layers for the plugin's `apply`:
+// ADR-0025 + V2 P0-1..P0-8. Assembles the two enforcement layers for `apply`:
 //   - `tools.guard()`  — monotonic, non-overridable deny. Branch A: mutating
 //     tools only (path/file_path/target hit the effective protected set).
 //     Branch B: bash/pwsh conservative literal shell-signature + workdir.
 //   - `tools/pre-execute` — dynamic allow/deny/ask. Two waterfall listeners,
 //     registered in this exact order (not reversible):
-//       1. roleCapabilityGate  — role capability deny (enforceRoles only).
+//       1. roleCapabilityGate  — role capability deny (enforceRoles only) +
+//                                 spawn observation (always, populates registry).
 //       2. gateApprovalGate    — cannot categories + gates -> ask/deny.
-//     Role deny outranks gate ask because roleCapabilityGate runs first.
+//
+// V2 P0-1: missing tools.guard -> throw (fail-closed), never silent skip.
+// V2 P0-2: Project Policy is bound to the calling agent's session workspace
+//   (exec.agent.session.header.cwd) via a per-exec loader cached by root, NOT
+//   to process.cwd(). Mount-time loads once for fail-closed validation.
+// V2 P0-4: roleRegistry observes subagent_<role> spawns (in roleCapabilityGate)
+//   and correlates `subagent/start` events (info.id = child session id,
+//   confirmed dsh-tool-cordis index.js:4230) to child identities.
+// V2 P0-5/P0-6: roles come from effectiveRoles() (baseline ∪ project, monotonic).
+// V2 P0-7: gates from effectiveGates() (baseline gates cannot be cancelled).
+// V2 P0-8: policy.yml loaded by loadPolicy() (defaultDeny/failClosed).
 //
 // `enforceRoles` (default false) turns the role capability gate on/off. The
-// authoritative layer this round is the spawn toolFilter (see preset/
-// agent.cordis.yml); role enforcement is staged until P4 validates the
-// roleRegistry correlation (Core Review #4).
+// authoritative layer this round is the spawn toolFilter; role enforcement is
+// staged until P4 validates the roleRegistry correlation (Core Review #4).
 
+import { resolve } from 'node:path'
 import {
   MUTATING_TOOLS,
   SHELL_TOOLS,
@@ -27,6 +38,9 @@ import {
   loadProjectPaths,
   loadRoles,
   loadGates,
+  loadPolicy,
+  effectiveRoles,
+  effectiveGates,
   cannotMap,
 } from './policy.js'
 import { createRoleRegistry, UNKNOWN } from './roles.js'
@@ -97,14 +111,45 @@ export function guardDecision(exec, { mode, effective }) {
   return undefined
 }
 
-// Waterfall listener #1 — role capability gate (deny priority). Runs first.
-// Returns a deny decision, or `next()` to continue (allow/fall-through).
-export function roleCapabilityGate({ registry, roles, enforceRoles }) {
+// Per-execution policy loader (V2 P0-2): bind Project Policy to the calling
+// agent's session workspace (exec.agent.session.header.cwd), not process.cwd().
+// Cached per root; mount-time apply also loads once for fail-closed validation.
+export function makePolicyLoader(config) {
+  const mode = config.mode === 'maintenance' ? 'maintenance' : 'runtime'
+  const policyRel = config.policyDir || '.cq/policy'
+  const fallbackRoot = config.workspaceRoot || process.cwd()
+  const cache = new Map()
+  const load = (root) => {
+    const policyDir = resolve(root, policyRel)
+    return {
+      root,
+      policyDir,
+      policy: loadPolicy(policyDir),
+      effective: effectiveGuard(mode, loadProjectPaths(policyDir)),
+      roles: effectiveRoles(loadRoles(policyDir)),
+      gates: effectiveGates(loadGates(policyDir)),
+    }
+  }
+  return (exec) => {
+    const root = exec?.agent?.session?.header?.cwd || fallbackRoot
+    let entry = cache.get(root)
+    if (!entry) { entry = load(root); cache.set(root, entry) }
+    return entry
+  }
+}
+
+// Waterfall listener #1 — role capability gate (deny priority) + spawn observer.
+// Runs first. observeSpawn always runs (populates registry regardless of switch);
+// the capability deny only applies when enforceRoles is on.
+export function roleCapabilityGate({ registry, loader, enforceRoles }) {
   return (exec, next) => {
-    if (!enforceRoles) return next() // role gating off this round
+    const tn = exec && exec.name
+    if (tn && /^subagent_[a-z0-9_-]+$/i.test(tn)) {
+      try { registry.observeSpawn(tn) } catch { /* fail-closed at correlate */ }
+    }
+    if (!enforceRoles) return next()
+    const { roles } = loader(exec)
     const role = registry.roleOf(exec)
-    // UNKNOWN -> deny-default: capability object is {} => canWrite and
-    // canExecuteCommand are both not-true.
     const capability = roles[role] || {}
     const name = exec && exec.name
     const roleName = role === UNKNOWN ? 'UNKNOWN' : String(role)
@@ -150,8 +195,9 @@ export function gatesDecision(gates, op) {
 
 // Waterfall listener #2 — cannot categories + gates -> ask/deny. Runs second
 // (after roleCapabilityGate), so it never overrides a role deny.
-export function gateApprovalGate({ registry, mode, gates }) {
+export function gateApprovalGate({ registry, loader, mode }) {
   return (exec, next) => {
+    const { gates } = loader(exec)
     const op = opFromExec(exec)
     const role = registry.roleOf(exec)
 
@@ -182,30 +228,37 @@ export function gateApprovalGate({ registry, mode, gates }) {
 
 export function apply(ctx, config = {}) {
   const mode = config.mode === 'maintenance' ? 'maintenance' : 'runtime'
-  const policyDir = config.policyDir || '.cq/policy'
   const enforceRoles = config.enforceRoles === true
-
-  // Load policy. fail-closed: loadProjectPaths / loadRoles / loadGates throw on
-  // malformed policy, which fails plugin mount rather than degrading.
-  const projectProtected = loadProjectPaths(policyDir)
-  const effective = effectiveGuard(mode, projectProtected)
-  const roles = loadRoles(policyDir)
-  const gates = loadGates(policyDir)
+  const loader = makePolicyLoader(config)
   const registry = createRoleRegistry()
 
+  // Mount-time fail-closed validation: load once (fallback root) so a malformed
+  // policy fails mount immediately rather than at first call. Per-call loads are
+  // cached by workspace root (V2 P0-2).
+  loader({ agent: { session: { header: { cwd: config.workspaceRoot } } } })
+
+  // V2 P0-1: hard guard is mandatory. Missing tools.guard -> fail-closed throw.
   const tools = ctx.get('tools')
-  if (tools && typeof tools.guard === 'function') {
-    const dispose = tools.guard((exec) => guardDecision(exec, { mode, effective }))
-    ctx.effect(() => dispose)
+  if (!tools || typeof tools.guard !== 'function') {
+    throw new Error('governance: tools.guard unavailable — cannot mount without hard guard (fail-closed)')
   }
+  const dispose = tools.guard((exec) => {
+    const p = loader(exec)
+    return guardDecision(exec, { mode, effective: p.effective })
+  })
+  ctx.effect(() => dispose)
 
   // Two pre-execute listeners, order fixed: roleCapabilityGate -> gateApprovalGate.
-  const preRole = roleCapabilityGate({ registry, roles, enforceRoles })
-  const preGate = gateApprovalGate({ registry, mode, gates })
+  const preRole = roleCapabilityGate({ registry, loader, enforceRoles })
+  const preGate = gateApprovalGate({ registry, loader, mode })
   ctx.on('tools/pre-execute', (exec, next) => preRole(exec, next))
   ctx.on('tools/pre-execute', (exec, next) => preGate(exec, next))
 
-  // Roles built for the caller: the registry + the enforcement switch, so the
-  // host surface (spawn tooling) can correlate identities when needed.
-  return { registry, mode, enforceRoles, effective, gates, roles, approvalGated: approvalGated(mode) }
+  // V2 P0-4: correlate subagent spawns to child session ids. The
+  // `subagent/start` event payload's `info.id` is the child session/agent id
+  // (confirmed: dsh-tool-cordis/lib/index.js:4230; dsh-subagent invariant.js:43).
+  // Defensive: if the event/payload shape differs, correlateStart -> UNKNOWN.
+  ctx.on('subagent/start', (payload) => { try { registry.correlateStart(payload) } catch { /* UNKNOWN */ } })
+
+  return { registry, mode, enforceRoles, loader, approvalGated: approvalGated(mode) }
 }

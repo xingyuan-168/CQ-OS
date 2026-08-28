@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — V2 Governance Runtime Hardening
+
+- V2 P0-1：`apply` 在 `tools.guard` 缺失时 throw（fail-closed），不静默跳过。
+- V2 P0-2：Project Policy 绑定 `exec.agent.session.header.cwd`（per-root 缓存 loader），不再依赖 `process.cwd()`；多项目 workspace 不串。
+- V2 P0-4：roleRegistry 真接线——`roleCapabilityGate` 观察 `subagent_<role>` spawn，`apply` 监听 `subagent/start`（payload `info.id` = 子会话 id，dsh-tool-cordis:4230 实证）关联角色。
+- V2 P0-5/P0-6：`BASELINE_ROLES`（含 core）+ `effectiveRoles()` 单调收紧（布尔 &&，cannot ∪）；project 不可放宽 baseline。
+- V2 P0-7：`effectiveGates()` 单调合并（baseline gate 不可被 project 取消）。
+- V2 P0-8：`loadPolicy()` 消费 `policy.yml`（defaultDeny/failClosed/schemaVersion），invalid→throw。
+- V2 P0-3：canonical FS Layer 2 暂记 `CANONICAL_FS_LAYER2_PENDING`（A1 已确认 ctx.fs.resolve 但需异步集成）；absolute/../traversal/symlink 对抗项暂标 BLOCKED。
+- 测试：policy 套件 15 项（新增 guardThrow/baselineMerge/gateMerge/policyLoad/registryWiring/workspaceIsolation）；回归 10/10。
+- 状态：代码+部署全绿；standingKeyFor + P4 对抗待用户实测；Hard Governance = PARTIAL（P0-3 与 A2 未闭合）。
+
 ## Unreleased — Governance Runtime Enforcement (pre-P4)
 
 - LOOP_BREAKER 规则层落地（cq-lifecycle/cq-governance skill + Core/maint persona + tech-debt）：同工具同参 ≤1 次、等价目标 ≤2 次、无新信息即 BLOCKED。

@@ -1,14 +1,15 @@
 import assert from 'node:assert'
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   patternMatches, normalizePath, normalizeCommand, shellSignature,
-  loadProjectPaths, loadRoles, loadGates,
+  loadProjectPaths, loadRoles, loadGates, loadPolicy,
   effectiveGuard, approvalGated, cannotMap, MUTATING_TOOLS,
+  effectiveRoles, effectiveGates, BASELINE_ROLES,
 } from '../preset/plugins/cq-governance/lib/policy.js'
 import { createRoleRegistry, UNKNOWN, roleFromToolName } from '../preset/plugins/cq-governance/lib/roles.js'
-import { guardDecision, gatesDecision, opFromExec } from '../preset/plugins/cq-governance/lib/core.js'
+import { guardDecision, gatesDecision, opFromExec, apply, makePolicyLoader } from '../preset/plugins/cq-governance/lib/core.js'
 
 // ── a. shell literal signature hits ────────────────────────────────────────
 {
@@ -106,4 +107,63 @@ import { guardDecision, gatesDecision, opFromExec } from '../preset/plugins/cq-g
   assert.equal(gatesDecision(gates, op), null, 'no over-gating of ordinary writes')
 }
 
-console.log(JSON.stringify({ ok: true, shellLiteral: true, overBlockRecorded: true, a2ResidualRecorded: true, cannotMap: true, modeMerge: true, roleRegistry: true, failClosed: true, guardMutatingOnly: true, checks: 10 }))
+// ── l. P0-1: missing tools.guard -> fail-closed throw (not silent skip) ───
+{
+  const noGuardCtx = { get: () => undefined, effect() {}, on() {} }
+  assert.throws(() => apply(noGuardCtx, { mode: 'runtime', policyDir: '.cq/policy' }), /tools.guard unavailable/, 'P0-1: missing guard throws')
+}
+
+// ── m. P0-5/P0-6: baseline roles non-relaxable; core included ─────────────
+{
+  const relaxed = effectiveRoles({ tester: { canWrite: true }, developer: { canWrite: false } })
+  assert.equal(relaxed.tester.canWrite, false, 'P0-6: project cannot raise tester canWrite above baseline false')
+  assert.equal(relaxed.developer.canWrite, false, 'P0-6: project can lower developer canWrite to false')
+  assert.ok(relaxed.developer.cannot.includes('modify-governance-rules'), 'P0-6: baseline cannot preserved')
+  assert.equal(relaxed.core.canWrite, true, 'P0-5: core baseline canWrite true')
+  assert.ok(relaxed.core.cannot.includes('modify-governance-rules'), 'P0-5: core baseline cannot')
+}
+
+// ── n. P0-7: baseline gates cannot be cancelled; project adds on top ──────
+{
+  const merged = effectiveGates({ 'production-release': { description: 'x', tool: 'ask_user_question' }, 'project-only': { description: 'p', tool: 'ask_user_question' } })
+  assert.ok(merged['production-release'] && merged['dangerous-ops'] && merged['governance-rule-change'], 'P0-7: baseline gates present')
+  assert.ok(merged['project-only'], 'P0-7: project gate added')
+}
+
+// ── o. P0-8: policy.yml runtime load; absent -> baseline defaults ──────────
+{
+  const p = loadPolicy('.cq/policy')
+  assert.equal(p.failClosed, true, 'P0-8: policy.yml failClosed=true')
+  assert.equal(p.defaultDeny, true, 'P0-8: policy.yml defaultDeny=true')
+  assert.equal(p.policyVersion, 1, 'P0-8: policy.yml schemaVersion 1')
+  assert.equal(loadPolicy(join(tmpdir(), 'no-policy-' + Date.now())).failClosed, true, 'P0-8: absent policy.yml -> failClosed default true')
+}
+
+// ── p. P0-4: roleRegistry wiring (subagent/start info.id -> child role) ───
+{
+  const ons = {}
+  const ctx = { get: (n) => n === 'tools' ? { guard: () => () => {} } : undefined, effect() {}, on(ev, fn) { ons[ev] = fn } }
+  const r = apply(ctx, { mode: 'runtime', policyDir: '.cq/policy' })
+  r.registry.observeSpawn('subagent_tester')
+  ons['subagent/start']({ id: 'child-1' })
+  assert.equal(r.registry.roleOf({ agent: { session: { header: { id: 'child-1' } }, delegationDepth: 1 } }), 'tester', 'P0-4: subagent/start info.id -> tester')
+}
+
+// ── q. P0-2: policy loader binds to exec workspace; cached per root ───────
+{
+  const aDir = mkdtempSync(join(tmpdir(), 'cq-ws-a-'))
+  const bDir = mkdtempSync(join(tmpdir(), 'cq-ws-b-'))
+  mkdirSync(join(aDir, '.cq', 'policy'), { recursive: true })
+  mkdirSync(join(bDir, '.cq', 'policy'), { recursive: true })
+  writeFileSync(join(aDir, '.cq', 'policy', 'protected-paths.yml'), 'schemaVersion: 1\nprotected:\n  - "preset/**"\n  - "projectA-only/**"\n')
+  writeFileSync(join(bDir, '.cq', 'policy', 'protected-paths.yml'), 'schemaVersion: 1\nprotected:\n  - "preset/**"\n  - "projectB-only/**"\n')
+  const loader = makePolicyLoader({ policyDir: '.cq/policy' })
+  const a = loader({ agent: { session: { header: { cwd: aDir } } } })
+  const b = loader({ agent: { session: { header: { cwd: bDir } } } })
+  assert.ok(a.effective.includes('projectA-only/**') && !a.effective.includes('projectB-only/**'), 'P0-2: workspace A reads only A policy')
+  assert.ok(b.effective.includes('projectB-only/**') && !b.effective.includes('projectA-only/**'), 'P0-2: workspace B reads only B policy')
+  assert.equal(loader({ agent: { session: { header: { cwd: aDir } } } }), a, 'P0-2: cached per root')
+  rmSync(aDir, { recursive: true, force: true }); rmSync(bDir, { recursive: true, force: true })
+}
+
+console.log(JSON.stringify({ ok: true, shellLiteral: true, overBlockRecorded: true, a2ResidualRecorded: true, cannotMap: true, modeMerge: true, roleRegistry: true, failClosed: true, guardMutatingOnly: true, guardThrow: true, baselineMerge: true, gateMerge: true, policyLoad: true, registryWiring: true, workspaceIsolation: true, checks: 15 }))
