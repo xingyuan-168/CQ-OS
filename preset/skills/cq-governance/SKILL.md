@@ -1,8 +1,8 @@
 # CQ Governance
 
-## V0.1 定位
+## V0.3 定位
 
-CQ OS V0.1 是强流程提示加可验证行为，不是不可绕过的策略引擎。工具级 `toolFilter` 是硬限制；资源、路径和职责限制依赖 Core persona、Skill 和角色纪律。路径级 RBAC 和硬治理拦截属于 B2 CQ Governance Plugin。
+CQ OS 已实现 Governance Runtime 强制（`@cq/governance` 插件，ADR-0025 + V2）：`tools.guard()` 单调 deny（受保护路径 + shell 字面签名）+ `tools/pre-execute` allow/deny/ask（角色能力、cannot 类别、门禁，ask 路由 approval seam），fail-closed 三态，policy/roles/gates 消费，canonical Layer 2（锚定根）。路径级 RBAC 已从"未来插件"变为实际 runtime 行为；A2（沙箱子路径只读）与 shell 动态语义为已记录 gap。`enforceRoles` 待真实会话验证后开启。
 
 ## 铁律
 

@@ -181,6 +181,8 @@
         provider: spawn
         toolName: subagent
         backgroundMode: continuable
+        toolFilter:
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review]
 
     - id: tool-subagent-fork
       name: '@deepseek-ai/dsh-tool-subagent'
@@ -188,6 +190,8 @@
         provider: fork
         toolName: subagent_fork
         backgroundMode: continuable
+        toolFilter:
+          deny: [subagent, subagent_fork, workflow, ralph, list_agents, send_message, interrupt_agent, subagent_product, subagent_research, subagent_ux, subagent_ui, subagent_architect, subagent_developer, subagent_tester, subagent_devops, subagent_review]
 
     # Production dsh does not install these optional providers. Install the
     # matching Bundle in this Profile and restart the Host, then copy this

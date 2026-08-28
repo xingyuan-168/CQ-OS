@@ -137,6 +137,11 @@ import { guardDecision, gatesDecision, opFromExec, apply, makePolicyLoader } fro
   assert.equal(p.defaultDeny, true, 'P0-8: policy.yml defaultDeny=true')
   assert.equal(p.policyVersion, 1, 'P0-8: policy.yml schemaVersion 1')
   assert.equal(loadPolicy(join(tmpdir(), 'no-policy-' + Date.now())).failClosed, true, 'P0-8: absent policy.yml -> failClosed default true')
+  // §十一: baseline invariant cannot be relaxed by project.
+  const relaxed = mkdtempSync(join(tmpdir(), 'cq-policy-relax-'))
+  writeFileSync(join(relaxed, 'policy.yml'), 'schemaVersion: 1\ndefaultDeny: true\nfailClosed: false\n')
+  assert.throws(() => loadPolicy(relaxed), /cannot relax baseline failClosed/, '§11: project failClosed:false -> throw')
+  rmSync(relaxed, { recursive: true, force: true })
 }
 
 // ── p. P0-4: roleRegistry wiring (subagent/start info.id -> child role) ───

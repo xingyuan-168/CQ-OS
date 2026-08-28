@@ -6,6 +6,11 @@ updatedAt: 2026-08-28T08:25:00+08:00
 commit: 61220705749c7204ec23e874ae8877f8d74d9748
 title: 修复 @cq/governance 挂载失败（web 部署过期）
 tags: [governance, deploy, bugfix]
+agent: CQ Core
+task: governance-stale-deploy-fix
+version: 0.2.0
+startedAt: 2026-08-28T08:00:00+08:00
+completedAt: 2026-08-28T08:25:00+08:00
 ---
 
 # 修复 @cq/governance 挂载失败（web 部署过期）

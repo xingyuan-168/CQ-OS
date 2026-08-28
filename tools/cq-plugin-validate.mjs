@@ -57,12 +57,23 @@ export function validatePluginManifest(manifest, runtime) {
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
 import { readFile } from 'node:fs/promises'
+import { load as yamlLoad } from 'js-yaml'
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const [source, cqOS = '0.2.0', dsh = '0.1.1-rc.2'] = process.argv.slice(2)
-  if (!source) throw new Error('usage: node tools/cq-plugin-validate.mjs <json-manifest | path-to-json> [cqOS] [dsh]')
+  if (!source) throw new Error('usage: node tools/cq-plugin-validate.mjs <manifest|path-to-manifest> [cqOS] [dsh]')
   const text = await readFile(resolve(source), 'utf8').catch(() => source)
-  const result = validatePluginManifest(JSON.parse(text), { cqOS, dsh })
+  let manifest
+  try {
+    // YAML by extension (or when the text is not JSON); otherwise JSON.
+    const isYaml = /\.ya?ml$/i.test(source) || !/^\s*[{\[]/.test(text)
+    manifest = isYaml ? yamlLoad(text) : JSON.parse(text)
+  } catch (err) {
+    console.log(JSON.stringify({ valid: false, errors: [`manifest parse failed: ${err.message}`] }, null, 2))
+    process.exitCode = 1
+    process.exit(1)
+  }
+  const result = validatePluginManifest(manifest, { cqOS, dsh })
   console.log(JSON.stringify(result, null, 2))
   if (!result.valid) process.exitCode = 1
 }

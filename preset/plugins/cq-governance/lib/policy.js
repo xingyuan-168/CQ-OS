@@ -108,15 +108,21 @@ export function effectiveGates(projectGates = {}) {
   return out
 }
 
-// Load policy.yml (V2 P0-8): the runtime-level switches. Absent -> baseline
-// defaults (defaultDeny=true, failClosed=true). Present but malformed -> throw.
+// Baseline security invariant (V2 §十一): fail-closed / default-deny are
+// non-relaxable system invariants. Project policy.yml may add restrictions but
+// may NOT set either to false. loadPolicy throws if a project attempts to relax.
+export const BASELINE_POLICY = { failClosed: true, defaultDeny: true }
+
+// Load policy.yml (V2 P0-8 / §十一): the runtime-level switches. Absent ->
+// baseline defaults. Present but malformed -> throw. failClosed/defaultDeny are
+// forced to true (project cannot relax); explicit `false` is rejected.
 export function loadPolicy(policyDir) {
   const file = join(policyDir, 'policy.yml')
   let text
   try {
     text = readFileSync(file, 'utf8')
   } catch (err) {
-    if (err && err.code === 'ENOENT') return { defaultDeny: true, failClosed: true, policyVersion: null }
+    if (err && err.code === 'ENOENT') return { ...BASELINE_POLICY, policyVersion: null }
     throw new Error(`governance: policy.yml exists but cannot be read (${file}): ${err.message}`)
   }
   if (!/^\s*schemaVersion:\s*1\s*$/m.test(text)) {
@@ -126,11 +132,11 @@ export function loadPolicy(policyDir) {
     const m = new RegExp(`^\\s*${key}:\\s*(true|false)\\s*$`, 'm').exec(text)
     return m ? m[1] === 'true' : undefined
   }
-  return {
-    defaultDeny: pick('defaultDeny'),
-    failClosed: pick('failClosed'),
-    policyVersion: 1,
-  }
+  const failClosed = pick('failClosed')
+  const defaultDeny = pick('defaultDeny')
+  if (failClosed === false) throw new Error(`governance: policy.yml cannot relax baseline failClosed (must stay true) at ${file}`)
+  if (defaultDeny === false) throw new Error(`governance: policy.yml cannot relax baseline defaultDeny (must stay true) at ${file}`)
+  return { ...BASELINE_POLICY, policyVersion: 1 }
 }
 
 // Normalize a path: backslashes -> forward slashes, collapse repeated slashes.

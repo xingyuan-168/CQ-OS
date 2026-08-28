@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — V2 Governance Runtime Hardening
+## 0.3.0 — Beta Automated Hardening
 
 > 源 review：`docs/reviews/CQ_OS_当前阶段修复清单_Governance_Maintenance_V2.md`
 
@@ -14,7 +14,7 @@
 - 测试：policy 套件 15 项（新增 guardThrow/baselineMerge/gateMerge/policyLoad/registryWiring/workspaceIsolation）；回归 10/10。
 - 状态：代码+部署全绿；standingKeyFor + P4 对抗待用户实测；Hard Governance = PARTIAL（P0-3 与 A2 未闭合）。
 
-## Unreleased — Governance Runtime Enforcement (pre-P4)
+## 0.3.0 — Governance Runtime Enforcement (pre-P4)
 
 - LOOP_BREAKER 规则层落地（cq-lifecycle/cq-governance skill + Core/maint persona + tech-debt）：同工具同参 ≤1 次、等价目标 ≤2 次、无新信息即 BLOCKED。
 - @cq/governance 运行时强制升级（ADR-0025）：双钩子（guard 单调 deny + pre-execute allow/deny/ask，ask 路由 approval seam、无 seam 退化 deny）；fail-closed 三态（absent≠invalid）；shell 保守字面匹配（非 parser）；roles/gates/policy 消费；maintenance 模式提升 preset/** 可写、治理文件/部署/force/reset 仍 ask；A2 gap（沙箱子路径只读）三处登记。

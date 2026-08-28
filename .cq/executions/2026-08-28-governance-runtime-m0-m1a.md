@@ -6,6 +6,11 @@ updatedAt: 2026-08-28T09:30:00+08:00
 commit: null
 title: Governance Runtime 落地 M0+M1a（Loop Breaker + fail-closed）
 tags: [governance, loop-breaker, fail-closed, maintenance]
+agent: CQ Core
+task: governance-runtime-m0-m1a
+version: 0.3.0
+startedAt: 2026-08-28T08:40:00+08:00
+completedAt: 2026-08-28T09:30:00+08:00
 ---
 
 # Governance Runtime 落地 M0+M1a（Loop Breaker + fail-closed）
