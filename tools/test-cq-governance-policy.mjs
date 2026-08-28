@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve as pathResolve } from 'node:path'
 import {
   patternMatches, normalizePath, normalizeCommand, shellSignature,
   loadProjectPaths, loadRoles, loadGates, loadPolicy,
@@ -166,4 +166,23 @@ import { guardDecision, gatesDecision, opFromExec, apply, makePolicyLoader } fro
   rmSync(aDir, { recursive: true, force: true }); rmSync(bDir, { recursive: true, force: true })
 }
 
-console.log(JSON.stringify({ ok: true, shellLiteral: true, overBlockRecorded: true, a2ResidualRecorded: true, cannotMap: true, modeMerge: true, roleRegistry: true, failClosed: true, guardMutatingOnly: true, guardThrow: true, baselineMerge: true, gateMerge: true, policyLoad: true, registryWiring: true, workspaceIsolation: true, checks: 15 }))
+// ── r. P0-3: canonical Layer 2 denies absolute/traversal/symlink ─────────
+await (async () => {
+  const ws = mkdtempSync(join(tmpdir(), 'cq-canonical-')).replaceAll('\\', '/')
+  // Mock ctx.fs.resolve to return a lexically-canonical targetKey (path.resolve
+  // collapses `..`; real realpath also resolves symlinks — sufficient here).
+  const fs = { resolve: (p, { cwd }) => ({ targetKey: pathResolve(cwd, p).replaceAll('\\', '/') }) }
+  const ons = {}
+  const ctx = { get: (n) => n === 'tools' ? { guard: () => () => {} } : n === 'fs' ? fs : undefined, effect() {}, on(ev, fn) { (ons[ev] ||= []).push(fn) } }
+  apply(ctx, { mode: 'runtime', policyDir: '.cq/policy' })
+  const canonical = ons['tools/pre-execute'][0]
+  const exec = (name, path) => ({ name, arguments: { file_path: path }, agent: { session: { header: { cwd: ws } } } })
+  const next = () => ({ kind: 'allow' })
+  assert.equal((await canonical(exec('write', 'src/../preset/x'), next))?.kind, 'deny', 'P0-3: traversal to preset denied (canonical)')
+  assert.equal((await canonical(exec('write', ws + '/preset/x'), next))?.kind, 'deny', 'P0-3: absolute preset denied (canonical)')
+  assert.equal((await canonical(exec('write', '.cq/policy/x'), next))?.kind, 'deny', 'P0-3: .cq/policy denied (canonical)')
+  assert.equal((await canonical(exec('write', 'src/app.js'), next))?.kind, 'allow', 'P0-3: normal path allowed')
+  rmSync(ws, { recursive: true, force: true })
+})()
+
+console.log(JSON.stringify({ ok: true, shellLiteral: true, overBlockRecorded: true, a2ResidualRecorded: true, cannotMap: true, modeMerge: true, roleRegistry: true, failClosed: true, guardMutatingOnly: true, guardThrow: true, baselineMerge: true, gateMerge: true, policyLoad: true, registryWiring: true, workspaceIsolation: true, canonicalLayer2: true, checks: 16 }))

@@ -226,6 +226,44 @@ export function gateApprovalGate({ registry, loader, mode }) {
   }
 }
 
+// Canonical Layer 2 (V2 P0-3): deny mutating writes whose realpath canonical
+// identity falls under a workspace-anchored protected root (preset / .cq/policy
+// / .dsh). Catches absolute / `..` traversal / symlink indirection that Layer 1
+// string matching misses. Runs as an ASYNC pre-execute listener (ctx.fs.resolve
+// is async, dsh-fs-local index.js:704) and is registered FIRST.
+//
+// Scope (honest): only workspace-anchored roots; `**/credentials/**` and `**.env`
+// remain covered by Layer 1 string matching. If ctx.fs is unavailable, Layer 2
+// is inactive and Layer 1 guard still applies (defense-in-depth, not the primary
+// gate). Residual NATIVE_SUBPATH_ENFORCEMENT_GAP (A2) for shell remains.
+export function canonicalGuard({ ctx, loader }) {
+  return async (exec, next) => {
+    const name = exec && exec.name
+    if (!MUTATING_TOOLS.includes(name)) return next()
+    const args = (exec && exec.arguments) || {}
+    const target = args.path ?? args.file_path ?? args.target
+    if (target == null) return next()
+    const fs = ctx.get('fs')
+    if (!fs || typeof fs.resolve !== 'function') return next()
+    const wsRoot = exec?.agent?.session?.header?.cwd
+    if (!wsRoot) return next()
+    try {
+      const resolved = await fs.resolve(target, { cwd: wsRoot })
+      const key = normalizePath(String(resolved?.targetKey ?? resolved))
+      const ws = normalizePath(wsRoot)
+      for (const root of ['preset', '.cq/policy', '.dsh']) {
+        const anchor = ws + '/' + root
+        if (key === anchor || key.startsWith(anchor + '/')) {
+          return { kind: 'deny', reason: `governance: canonical protected path denied: ${target}` }
+        }
+      }
+    } catch {
+      // resolve failed (permission/IO) -> rely on Layer 1 guard; do not broad-deny.
+    }
+    return next()
+  }
+}
+
 export function apply(ctx, config = {}) {
   const mode = config.mode === 'maintenance' ? 'maintenance' : 'runtime'
   const enforceRoles = config.enforceRoles === true
@@ -249,6 +287,9 @@ export function apply(ctx, config = {}) {
   ctx.effect(() => dispose)
 
   // Two pre-execute listeners, order fixed: roleCapabilityGate -> gateApprovalGate.
+  // Canonical Layer 2 (V2 P0-3) runs FIRST (async) to deny absolute/traversal/
+  // symlink writes into anchored protected roots.
+  ctx.on('tools/pre-execute', (exec, next) => canonicalGuard({ ctx, loader })(exec, next))
   const preRole = roleCapabilityGate({ registry, loader, enforceRoles })
   const preGate = gateApprovalGate({ registry, loader, mode })
   ctx.on('tools/pre-execute', (exec, next) => preRole(exec, next))

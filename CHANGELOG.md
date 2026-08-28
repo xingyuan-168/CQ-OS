@@ -9,6 +9,7 @@
 - V2 P0-7：`effectiveGates()` 单调合并（baseline gate 不可被 project 取消）。
 - V2 P0-8：`loadPolicy()` 消费 `policy.yml`（defaultDeny/failClosed/schemaVersion），invalid→throw。
 - V2 P0-3：canonical FS Layer 2 暂记 `CANONICAL_FS_LAYER2_PENDING`（A1 已确认 ctx.fs.resolve 但需异步集成）；absolute/../traversal/symlink 对抗项暂标 BLOCKED。
+- V2 P0-3b：canonical Layer 2 已实现（async `canonicalGuard` pre-execute，经 `ctx.fs.resolve` realpath 校验 workspace 锚定受保护根 preset/.cq/policy/.dsh，拦截 absolute/traversal/symlink）；范围限于锚定根，.env/credentials 仍 Layer 1；A2 shell 残余标 BLOCKED。
 - 测试：policy 套件 15 项（新增 guardThrow/baselineMerge/gateMerge/policyLoad/registryWiring/workspaceIsolation）；回归 10/10。
 - 状态：代码+部署全绿；standingKeyFor + P4 对抗待用户实测；Hard Governance = PARTIAL（P0-3 与 A2 未闭合）。
 

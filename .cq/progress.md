@@ -28,7 +28,7 @@ title: Progress
 - 新增死名扫描回归防护 `tools/check-toolfilter-deadnames.mjs`（`agent.cordis.yml` 扫描为 `dead: []`）。
 - **Governance Runtime（ADR-0025 + V2）**：LOOP_BREAKER 规则层；@cq/governance 双钩子（guard 单调 deny + pre-execute allow/deny/ask）；fail-closed 三态；shell 保守字面匹配；maintenance 模式；模块拆分（policy/roles/core 零依赖）；cq-os 与 cq-os-maint 接入 governance 行；tester deny write/edit、4 角色 deny bash；gates 增 dangerous-ops/governance-rule-change。
 - **V2 收口（本轮）**：P0-1 guard 缺失 fail-closed throw；P0-2 policy 绑定 exec.agent.session.header.cwd（per-root 缓存，非 process.cwd）；P0-4 roleRegistry 真接线（observeSpawn + subagent/start info.id 关联）；P0-5 BASELINE_ROLES 含 core；P0-6 effectiveRoles 单调收紧；P0-7 effectiveGates 单调；P0-8 loadPolicy 消费 policy.yml。测试 15 项 + 回归 10/10 全绿。
-- **P0-3 canonical FS Layer 2 待办**：A1 已确认 ctx.fs.resolve(realpath) 但需异步集成，暂记 CANONICAL_FS_LAYER2_PENDING；absolute/../traversal/symlink 对抗项暂标 BLOCKED。
+- **P0-3 canonical FS Layer 2 已实现（partial）**：async `canonicalGuard` pre-execute 监听，经 `ctx.fs.resolve` realpath 校验 workspace 锚定受保护根（preset/.cq/policy/.dsh），拦截 absolute/traversal/symlink；.env/credentials 仍由 Layer 1；A2 shell 残余对抗项标 BLOCKED。
 - **待 P4 用户实测**：standingKeyFor×2、新会话对抗、9 角色 smoke、Gate A/B、cq-os-maint 升级狗粮。P4（含 enforceRoles 开启）通过后 tag v0.3.0 并标 VERIFIED；当前 Hard Governance = PARTIAL。
 
 ## V2 Current
