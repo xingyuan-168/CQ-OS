@@ -4,4 +4,8 @@
 .cq/validation/
 node_modules/
 *.log
+*.zip
 .DS_Store
+
+# P4 test artifacts (Tester sandbox output)
+.tmp/

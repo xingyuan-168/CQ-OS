@@ -2,8 +2,8 @@
 id: progress
 type: progress
 status: active
-updatedAt: 2026-08-26T21:52:47+08:00
-commit: 1c3a77997638984b7152273030f2a7c8a8b5e25b
+updatedAt: 2026-08-28T15:20:00+08:00
+commit: c27301a897555f25e4032cf9374b6f904c3bf46c
 title: Progress
 ---
 
@@ -19,13 +19,17 @@ title: Progress
 - `standingKeyFor('cq-os')` 真挂载验证成功。
 - Git commit、`v0.1.0` tag 和 GitHub 远端推送完成。
 - 狗粮课题：CQ Memory schema 一次性迁移完成（五阶段治理 + Human Gate + Review 落盘 + Git v0.2.0 闭环）。
+- DSH 部署配置（`~/.dsh/settings.yaml`，非 Git 跟踪）：`llm-pi-ai.providers.hs`（火山方舟 Agent Plan，`https://ark.cn-beijing.volces.com/api/plan/v3`，凭据 `HS_API_KEY`）已配置 DeepSeek V4 Flash 与 V4 Pro 两个模型（1M 上下文/384K 输出，推理档位 off/high/max，deepseek 方言 compat），供模型选择器选用；默认路由未改动。
 
 ## V1 Status
 
 - V1 源码、部署、`standingKeyFor('cq-os')` 真挂载和 Git v0.1.0 已完成。
 - 已完成 P0–P2 收口修复：清理 8 角色 toolFilter 死名、修正 Workflow 绕过角色与结果传递、补失败恢复规则、补 Research 开源评估字段、Memory schema 迁移规则、project-init 骨架、统一 Cordis 自修改描述、校正 V2 进度标记。
 - 新增死名扫描回归防护 `tools/check-toolfilter-deadnames.mjs`（`agent.cordis.yml` 扫描为 `dead: []`）。
-- 新苍穹模式会话工具目录、Gate A、Gate B、9 角色 smoke test 仍需用户在 Web GUI 实测。
+- **Governance Runtime（ADR-0025 + V2）**：LOOP_BREAKER 规则层；@cq/governance 双钩子（guard 单调 deny + pre-execute allow/deny/ask）；fail-closed 三态；shell 保守字面匹配；maintenance 模式；模块拆分（policy/roles/core 零依赖）；cq-os 与 cq-os-maint 接入 governance 行；tester deny write/edit、4 角色 deny bash；gates 增 dangerous-ops/governance-rule-change。
+- **V2 收口（本轮）**：P0-1 guard 缺失 fail-closed throw；P0-2 policy 绑定 exec.agent.session.header.cwd（per-root 缓存，非 process.cwd）；P0-4 roleRegistry 真接线（observeSpawn + subagent/start info.id 关联）；P0-5 BASELINE_ROLES 含 core；P0-6 effectiveRoles 单调收紧；P0-7 effectiveGates 单调；P0-8 loadPolicy 消费 policy.yml；P0-3 canonical Layer 2（canonicalGuard）。测试 16 项 + 回归 10/10 全绿。源 review 见 `docs/reviews/CQ_OS_当前阶段修复清单_Governance_Maintenance_V2.md`。
+- **P0-3 canonical FS Layer 2 已实现（partial）**：async `canonicalGuard` pre-execute 监听，经 `ctx.fs.resolve` realpath 校验 workspace 锚定受保护根（preset/.cq/policy/.dsh），拦截 absolute/traversal/symlink；.env/credentials 仍由 Layer 1；A2 shell 残余对抗项标 BLOCKED。
+- **P4 用户实测（2026-08-28）**：按 `docs/p4-user-validation-checklist.md` 在真实 GUI 会话整体执行完毕并如实记录 → **Hard Governance = PARTIAL（未 VERIFIED），未 tag v0.3.0**。第 1 组 standingKeyFor（live-mount 等价证据）、第 2 组对抗（Developer 1 ALLOW/7 DENY）、第 4 组 enforceRoles（单测+真实 spawn）通过；第 3 组 9 角色 smoke **5/9 过、4/9 FAIL**（Product/Research/UX/UI 无法 spawn——P4-DEADNAME）；第 5 组升级狗粮**被 P4-MAINT-GUARD 阻断**（canonicalGuard 模式无关 → 维护模式无法写 preset/，连带阻塞 deadname 修复，形成死锁）。用户决定"只记录失败、不做修复"。记录与根因见 `.cq/review/p4-user-validation-2026-08-28.md`；修复前置：先修 P4-MAINT-GUARD，再修 P4-DEADNAME，全部通过后才可 tag v0.3.0 并标 VERIFIED。
 
 ## V2 Current
 

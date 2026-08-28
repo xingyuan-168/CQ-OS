@@ -1,11 +1,37 @@
 # Changelog
 
+## 0.3.0 — Beta Automated Hardening
+
+> 源 review：`docs/reviews/CQ_OS_当前阶段修复清单_Governance_Maintenance_V2.md`
+
+- V2 P0-1：`apply` 在 `tools.guard` 缺失时 throw（fail-closed），不静默跳过。
+- V2 P0-2：Project Policy 绑定 `exec.agent.session.header.cwd`（per-root 缓存 loader），不再依赖 `process.cwd()`；多项目 workspace 不串。
+- V2 P0-4：roleRegistry 真接线——`roleCapabilityGate` 观察 `subagent_<role>` spawn，`apply` 监听 `subagent/start`（payload `info.id` = 子会话 id，dsh-tool-cordis:4230 实证）关联角色。
+- V2 P0-5/P0-6：`BASELINE_ROLES`（含 core）+ `effectiveRoles()` 单调收紧（布尔 &&，cannot ∪）；project 不可放宽 baseline。
+- V2 P0-7：`effectiveGates()` 单调合并（baseline gate 不可被 project 取消）。
+- V2 P0-8：`loadPolicy()` 消费 `policy.yml`（defaultDeny/failClosed/schemaVersion），invalid→throw。
+- V2 P0-3：canonical FS Layer 2 已实现（async `canonicalGuard` pre-execute，经 `ctx.fs.resolve` realpath 校验 workspace 锚定受保护根 preset/.cq/policy/.dsh，拦截 absolute/traversal/symlink）；范围限于锚定根，.env/credentials 仍 Layer 1；A2 shell 残余（变量展开/cd 子命令）标 BLOCKED。
+- 测试：policy 套件 15 项（新增 guardThrow/baselineMerge/gateMerge/policyLoad/registryWiring/workspaceIsolation）；回归 10/10。
+- 状态：代码+部署全绿；standingKeyFor + P4 对抗待用户实测；Hard Governance = PARTIAL（P0-3 与 A2 未闭合）。
+
+## 0.3.0 — Governance Runtime Enforcement (pre-P4)
+
+- LOOP_BREAKER 规则层落地（cq-lifecycle/cq-governance skill + Core/maint persona + tech-debt）：同工具同参 ≤1 次、等价目标 ≤2 次、无新信息即 BLOCKED。
+- @cq/governance 运行时强制升级（ADR-0025）：双钩子（guard 单调 deny + pre-execute allow/deny/ask，ask 路由 approval seam、无 seam 退化 deny）；fail-closed 三态（absent≠invalid）；shell 保守字面匹配（非 parser）；roles/gates/policy 消费；maintenance 模式提升 preset/** 可写、治理文件/部署/force/reset 仍 ask；A2 gap（沙箱子路径只读）三处登记。
+- 模块拆分（policy/roles/core 零依赖 + index 保留 schemastery Config）使干净克隆可跑纯逻辑测试。
+- 组合接入：cq-os 与 cq-os-maint 均加 @cq/governance 行；tester deny 增 write/edit；product/research/ux/ui deny 增 bash。
+- gates.yml 增 dangerous-ops、governance-rule-change；tech-debt 登记 NATIVE_SUBPATH_ENFORCEMENT_GAP (A2) 与 ROLE_IDENTITY_ASSOCIATION_GAP。
+- 测试：新增 test-cq-governance-policy.mjs（10 类零依赖用例）；全套回归 10/10；Tester 独立复验 all-pass。
+- 状态：代码+部署+Tester 全绿；standingKeyFor 与真实会话对抗（P4）待用户实测；Hard Governance 暂为 PARTIAL，P4 通过后再 tag v0.3.0 并标 VERIFIED。
+
 ## 0.2.0
 
 - CQ Memory schema 一次性迁移（狗粮课题）完成：5 个记忆文件补 front matter、索引器 skip 名单修正（selfcheck/review）、签署 ADR-0024、索引 5/0 → 7/0 幂等重建、回归全过。
 
 ## Unreleased / V2 baseline
 
+- V2 阶段G/M/V/P 增量：治理运行时强制（`tools/cq-protect.mjs` 保护路径匹配器 + 6 命中/4 放行/fail-closed 测试，已证实在 cq-os agent scope 经 guard 拒绝受保护路径）；Memory 决策闭环（决策前查询/任务后写入规则、首个 execution-summary 真实条目、索引 skip 扩展 policy/.README）；版本化收口（需求变更管理流程 + Rule/Workflow 版本追踪）；插件开发运行手册（validate→compose→挂载→卸载完整闭环）。
+- 智能路由（阶段R）由用户决定暂停接线，`.cq/routemap.yml` 保留为按角色的真实模型声明。
 - V2 阶段1/2/3/4/5 生产化增量：验证 `tools.guard()` 在 cq-os agent scope 可用（关闭 ADR-0020 阻塞项）；Memory 查询/类型补齐（9/0）；`.cq/policy/` 治理策略基准 + fail-closed 校验器；`.cq/routemap.yml` 路由映射 + 校验器；V2.3 插件 validate+compose 端到端测试。
 - V2.1 Memory 生产化（本会话部分）：新增 `tools/cq-memory-query.mjs` 查询/过滤能力（按 type/status/agent/commit/version），补 `.cq/bugs.md`、`.cq/preferences.md` 类型骨架，补 `review` 目录 skip 回归断言，索引 9 records / 0 reports。
 - 完成 V2.0 治理开源调研与 `tools/pre-execute` 原生拒绝 PoC；记录 `tools.guard()` 动态注入兼容性限制；签署 ADR-0020（首期复用 pre-execute，不引入第三方策略引擎）。

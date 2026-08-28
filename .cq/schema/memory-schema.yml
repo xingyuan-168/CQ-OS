@@ -15,6 +15,15 @@ allowedTypes:
   - preference
   - tech-debt
   - version
+# execution-summary required metadata (V2 §二十三 / Final Hardening):
+#   agent, task, commit, version, startedAt, completedAt
+executionSummaryRequired:
+  - agent
+  - task
+  - commit
+  - version
+  - startedAt
+  - completedAt
 legacyStatus: legacy
 index:
   path: .cq/index.json

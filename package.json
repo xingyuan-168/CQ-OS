@@ -1,0 +1,16 @@
+{
+  "name": "cq-os",
+  "version": "0.3.0",
+  "private": true,
+  "description": "CQ OS (CangQiong) — AI software engineering organization preset for DSH. Repo tooling root.",
+  "type": "module",
+  "scripts": {
+    "test": "node tools/test-all.mjs"
+  },
+  "devDependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

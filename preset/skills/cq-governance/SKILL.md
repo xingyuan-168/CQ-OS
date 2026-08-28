@@ -1,8 +1,8 @@
 # CQ Governance
 
-## V0.1 定位
+## V0.3 定位
 
-CQ OS V0.1 是强流程提示加可验证行为，不是不可绕过的策略引擎。工具级 `toolFilter` 是硬限制；资源、路径和职责限制依赖 Core persona、Skill 和角色纪律。路径级 RBAC 和硬治理拦截属于 B2 CQ Governance Plugin。
+CQ OS 已实现 Governance Runtime 强制（`@cq/governance` 插件，ADR-0025 + V2）：`tools.guard()` 单调 deny（受保护路径 + shell 字面签名）+ `tools/pre-execute` allow/deny/ask（角色能力、cannot 类别、门禁，ask 路由 approval seam），fail-closed 三态，policy/roles/gates 消费，canonical Layer 2（锚定根）。路径级 RBAC 已从"未来插件"变为实际 runtime 行为；A2（沙箱子路径只读）与 shell 动态语义为已记录 gap。`enforceRoles` 待真实会话验证后开启。
 
 ## 铁律
 
@@ -28,6 +28,15 @@ CQ OS V0.1 是强流程提示加可验证行为，不是不可绕过的策略引
 6. 记录恢复动作、原因和结果到 `.cq/` 相关记忆文件，关联 commit。
 
 禁止无记录地绕过或吞掉失败。
+
+## 工具循环熔断（LOOP_BREAKER）
+
+1. 相同工具 + 相同参数：最多执行 1 次，禁止重复。
+2. 相同目标 + 等价参数：最多 2 次，第二次必须是真正换方案的重试。
+3. 连续多次工具调用没有新增信息：判定 `LOOP_BREAKER_TRIGGERED`，立即停止工具调用。
+4. 触发后：BLOCKED → 总结已知事实 → 根因分析 → 换方案 → 必要时 Human Intervention。
+
+禁止无新信息的重复 read/grep/open。
 
 ## 质量与安全
 

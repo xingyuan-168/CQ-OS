@@ -6,7 +6,28 @@ CQ OS 工作区 Git 仓库中的 `preset/` 是唯一源码。`$DSH_HOME/.agent-p
 
 ## 版本与变更
 
-使用 Git branch、commit、tag、release。每次迭代更新 CHANGELOG、更新说明、风险分析和 `.cq/versions/`。需求变化必须分析影响范围、更新任务、判断架构影响并调整计划，禁止直接堆叠代码。
+使用 Git branch、commit、tag、release。每次迭代更新 CHANGELOG、更新说明、风险分析和 `.cq/versions/`。
+
+### 需求变更管理
+
+需求变化**禁止直接堆叠代码**，必须按以下流程：
+
+1. **影响分析**：分析变更影响哪些已完成模块、决策、记忆与测试。
+2. **任务更新**：更新 `todo_write` 与 `.cq/progress.md` 的当前/未完成项。
+3. **架构影响**：判断变更是否触及架构/技术决策；若是，回流 Architect 出增量 ADR（`decisions/ADR-NNNN-*.md`）。
+4. **计划调整**：调整版本计划与 `.cq/versions/` 目标。
+5. **记录**：变更原因与影响写入 `.cq/`，关联 commit。
+
+### 版本追踪粒度
+
+CQ OS 自身版本在 `.cq/versions/<版本>.md` 记录。除主版本外，明确追踪以下变更单元：
+
+- **CQ OS 版本**：预设组合整体（`preset/agent.cordis.yml` + skills + templates）。
+- **Rule 版本**：治理策略变更（`.cq/policy/*.yml` 与 `cq-governance`/`cq-roles` 规则）单独记录，可回滚。
+- **Workflow 版本**：`preset/templates/workflows/*.js` 模板变更单独记录。
+- **Plugin 版本**：未来插件用 SemVer + `cq-plugin.yml` 声明。
+
+任何 Rule/Workflow 变更必须能在 Git 历史中定位到具体 commit，可回滚。
 
 ## 交付
 
@@ -22,6 +43,17 @@ CQ OS 工作区 Git 仓库中的 `preset/` 是唯一源码。`$DSH_HOME/.agent-p
 4. 代码导致测试失败且无法恢复 → Git 回滚到安全点。
 5. 破坏性操作或多次恢复失败 → 请求人工介入。
 6. 所有恢复动作写入 `.cq/`，关联任务与 commit。
+
+## 工具循环熔断（LOOP_BREAKER）
+
+为防止 Tool / Reasoning 无界循环，必须遵守：
+
+1. 相同工具 + 相同参数：最多执行 1 次，禁止重复。
+2. 相同目标 + 等价参数：最多 2 次，且第二次必须是"方案真正发生变化"的重试。
+3. 连续多次工具调用没有新增信息：立即判定 `LOOP_BREAKER_TRIGGERED`，停止工具调用。
+4. 触发后：停止继续调用工具 → 状态 BLOCKED → 总结已知事实 → 根因分析 → 换方案 → 必要时 Human Intervention。
+
+禁止无新信息的重复 read/grep/open。
 
 ## V0.1 后置任务
 

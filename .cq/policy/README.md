@@ -13,7 +13,9 @@
 ## 语义
 
 - 所有策略 fail-closed：配置损坏、校验失败、无法决策时一律拒绝，不默认放行。
-- 策略是声明，运行时由 DSH `tools.guard()` / `tools/pre-execute` 消费。本目录的 `.yml` 仅作为权威声明源，由 `tools/cq-policy.mjs` 校验其结构合法。
+- 策略是声明，运行时由 DSH `tools.guard()` / `tools/pre-execute` 消费。本目录的 `.yml` 仅作为权威声明源。
+- 结构校验：`tools/cq-policy.mjs` 校验 policy/roles/protected-paths/gates 的形态合法。
+- **运行时强制（已验证）**：`tools/cq-protect.mjs` 读取 `protected-paths.yml` 并提供 `matchProtected(path)`；在 cq-os agent scope 里经 `tools.guard()` 注册拒绝即可在工具执行前拦截受保护路径写入。已在真实 cq-os agent 上下文验证 guard 可用 + `preset/**`、`.cq/policy/**`、`**.env`、`**/credentials/**` 等命中、普通源码放行。
 - 每项策略变更需更新 `.cq/decisions/` 并关联 commit，可追踪。
 
-> 本目录为基准结构。实际策略内容由阶段 5 落地时填充，当前仅提供合法占位与校验依据。
+> 本目录为治理策略基准。结构校验与运行时匹配器已就绪；将策略实际挂载进 preset（作为 guard 行）待后续接线阶段。

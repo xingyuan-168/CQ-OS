@@ -17,6 +17,15 @@ CQ Memory 保存项目工程知识，不复制聊天记录或原始 Agent 运行
 
 每次完成任务后更新相关条目并关联 commit。写入前先查询现有记忆，避免重复和日志膨胀。结构化/宿主级存储属于 B5。
 
+## 决策闭环（写前查、任务后写）
+
+CQ Memory 必须在决策和任务循环中真正被使用，而不只是存在：
+
+1. **决策前查询**：Core 在委派角色或做方案决策前，先查询 `.cq/` 已有记忆。用 `node tools/cq-memory-query.mjs . '{"type":"decision"}'`（或按 type/status/agent/commit/version 过滤）确认是否已有相关决策/ADR/技术债，避免重复决策或推翻既有结论。
+2. **任务后写入**：每个完成任务后，把提炼摘要写入 `.cq/executions/<日期>-<任务>.md`（type=`execution-summary`，含 agent/commit），并把发现的问题写入 `.cq/bugs.md`、偏好写入 `.cq/preferences.md`、临时方案写入 `.cq/tech-debt.md`，全部关联 commit。
+3. **索引重建**：新增/修改记忆后运行 `node tools/cq-memory-index.mjs .` 重建 `.cq/index.json`，保持索引与 Markdown 一致。
+4. **不造空条目**：记忆只在有真实内容时写入；不为了"看起来有记忆"而填充空壳。
+
 ## 元数据 schema（新写入必须符合）
 
 每条记忆文件使用统一 front matter 头部字段：`id`、`type`、`status`、`updatedAt`。可选：`agent`、`commit`、`version`、`title`、`tags`。

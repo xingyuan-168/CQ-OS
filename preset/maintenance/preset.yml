@@ -1,0 +1,2 @@
+name: 苍穹维护模式
+description: CQ OS 维护模式：负责修改 preset/、验证、Git commit、部署、standingKeyFor 校验和日常升级。窄权限、不挂 tool-cordis、不含 9 个软件工程角色。

@@ -22,9 +22,9 @@ function check(presetPath) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  const presetPath = process.argv[2]
-  if (!presetPath) throw new Error('usage: node tools/check-toolfilter-deadnames.mjs <agent.cordis.yml>')
-  const result = check(presetPath)
-  console.log(JSON.stringify(result, null, 2))
-  if (result.dead.length > 0) process.exitCode = 1
+  const paths = process.argv.slice(2)
+  if (paths.length === 0) throw new Error('usage: node tools/check-toolfilter-deadnames.mjs <agent.cordis.yml> [more...]')
+  const results = paths.map(check)
+  console.log(JSON.stringify(results, null, 2))
+  if (results.some((r) => r.dead.length > 0)) process.exitCode = 1
 }
