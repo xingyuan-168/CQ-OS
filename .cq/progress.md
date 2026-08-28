@@ -29,7 +29,7 @@ title: Progress
 - **Governance Runtime（ADR-0025 + V2）**：LOOP_BREAKER 规则层；@cq/governance 双钩子（guard 单调 deny + pre-execute allow/deny/ask）；fail-closed 三态；shell 保守字面匹配；maintenance 模式；模块拆分（policy/roles/core 零依赖）；cq-os 与 cq-os-maint 接入 governance 行；tester deny write/edit、4 角色 deny bash；gates 增 dangerous-ops/governance-rule-change。
 - **V2 收口（本轮）**：P0-1 guard 缺失 fail-closed throw；P0-2 policy 绑定 exec.agent.session.header.cwd（per-root 缓存，非 process.cwd）；P0-4 roleRegistry 真接线（observeSpawn + subagent/start info.id 关联）；P0-5 BASELINE_ROLES 含 core；P0-6 effectiveRoles 单调收紧；P0-7 effectiveGates 单调；P0-8 loadPolicy 消费 policy.yml；P0-3 canonical Layer 2（canonicalGuard）。测试 16 项 + 回归 10/10 全绿。源 review 见 `docs/reviews/CQ_OS_当前阶段修复清单_Governance_Maintenance_V2.md`。
 - **P0-3 canonical FS Layer 2 已实现（partial）**：async `canonicalGuard` pre-execute 监听，经 `ctx.fs.resolve` realpath 校验 workspace 锚定受保护根（preset/.cq/policy/.dsh），拦截 absolute/traversal/symlink；.env/credentials 仍由 Layer 1；A2 shell 残余对抗项标 BLOCKED。
-- **待 P4 用户实测**：standingKeyFor×2、新会话对抗、9 角色 smoke、Gate A/B、cq-os-maint 升级狗粮。P4（含 enforceRoles 开启）通过后 tag v0.3.0 并标 VERIFIED；当前 Hard Governance = PARTIAL。
+- **P4 用户实测（2026-08-28）**：按 `docs/p4-user-validation-checklist.md` 在真实 GUI 会话整体执行完毕并如实记录 → **Hard Governance = PARTIAL（未 VERIFIED），未 tag v0.3.0**。第 1 组 standingKeyFor（live-mount 等价证据）、第 2 组对抗（Developer 1 ALLOW/7 DENY）、第 4 组 enforceRoles（单测+真实 spawn）通过；第 3 组 9 角色 smoke **5/9 过、4/9 FAIL**（Product/Research/UX/UI 无法 spawn——P4-DEADNAME）；第 5 组升级狗粮**被 P4-MAINT-GUARD 阻断**（canonicalGuard 模式无关 → 维护模式无法写 preset/，连带阻塞 deadname 修复，形成死锁）。用户决定"只记录失败、不做修复"。记录与根因见 `.cq/review/p4-user-validation-2026-08-28.md`；修复前置：先修 P4-MAINT-GUARD，再修 P4-DEADNAME，全部通过后才可 tag v0.3.0 并标 VERIFIED。
 
 ## V2 Current
 
