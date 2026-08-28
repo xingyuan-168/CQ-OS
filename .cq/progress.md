@@ -27,7 +27,7 @@ title: Progress
 - 已完成 P0–P2 收口修复：清理 8 角色 toolFilter 死名、修正 Workflow 绕过角色与结果传递、补失败恢复规则、补 Research 开源评估字段、Memory schema 迁移规则、project-init 骨架、统一 Cordis 自修改描述、校正 V2 进度标记。
 - 新增死名扫描回归防护 `tools/check-toolfilter-deadnames.mjs`（`agent.cordis.yml` 扫描为 `dead: []`）。
 - **Governance Runtime（ADR-0025 + V2）**：LOOP_BREAKER 规则层；@cq/governance 双钩子（guard 单调 deny + pre-execute allow/deny/ask）；fail-closed 三态；shell 保守字面匹配；maintenance 模式；模块拆分（policy/roles/core 零依赖）；cq-os 与 cq-os-maint 接入 governance 行；tester deny write/edit、4 角色 deny bash；gates 增 dangerous-ops/governance-rule-change。
-- **V2 收口（本轮）**：P0-1 guard 缺失 fail-closed throw；P0-2 policy 绑定 exec.agent.session.header.cwd（per-root 缓存，非 process.cwd）；P0-4 roleRegistry 真接线（observeSpawn + subagent/start info.id 关联）；P0-5 BASELINE_ROLES 含 core；P0-6 effectiveRoles 单调收紧；P0-7 effectiveGates 单调；P0-8 loadPolicy 消费 policy.yml。测试 15 项 + 回归 10/10 全绿。
+- **V2 收口（本轮）**：P0-1 guard 缺失 fail-closed throw；P0-2 policy 绑定 exec.agent.session.header.cwd（per-root 缓存，非 process.cwd）；P0-4 roleRegistry 真接线（observeSpawn + subagent/start info.id 关联）；P0-5 BASELINE_ROLES 含 core；P0-6 effectiveRoles 单调收紧；P0-7 effectiveGates 单调；P0-8 loadPolicy 消费 policy.yml；P0-3 canonical Layer 2（canonicalGuard）。测试 16 项 + 回归 10/10 全绿。源 review 见 `docs/reviews/CQ_OS_当前阶段修复清单_Governance_Maintenance_V2.md`。
 - **P0-3 canonical FS Layer 2 已实现（partial）**：async `canonicalGuard` pre-execute 监听，经 `ctx.fs.resolve` realpath 校验 workspace 锚定受保护根（preset/.cq/policy/.dsh），拦截 absolute/traversal/symlink；.env/credentials 仍由 Layer 1；A2 shell 残余对抗项标 BLOCKED。
 - **待 P4 用户实测**：standingKeyFor×2、新会话对抗、9 角色 smoke、Gate A/B、cq-os-maint 升级狗粮。P4（含 enforceRoles 开启）通过后 tag v0.3.0 并标 VERIFIED；当前 Hard Governance = PARTIAL。
 

@@ -1,5 +1,7 @@
 # CQ OS 当前阶段修复清单
 
+> 实施状态（2026-08-28）：P0-1/2/3/4/5/6/7/8 已实现并测试（commit `241c7ce`、`aa911be`，部署 web+desktop+Temp）；P0-9/10 已落地；P0-11/12/13 待用户 GUI 实测；A2 shell 残余维持 PARTIAL。本文档为源 review，实施以 `preset/`、`.cq/`、CHANGELOG 为准。
+
 版本：Governance + Maintenance 收口修复版  
 用途：直接交给 DSH 执行。  
 原则：不重构 CQ OS，不做模型路由，不扩 Agent；本轮只完成 Governance / cq-os-maint 的生产边界收口与真实验收。

@@ -6,7 +6,7 @@
 
 - 工作区：`D:\dsh-projects\CQ OS`（`preset/` 为唯一源码）
 - 远端：`git@github.com:xingyuan-168/CQ-OS.git`
-- 最新提交 `6122070`（HEAD）
+- 最新提交见 `git -C 'D:\dsh-projects\CQ OS' log -1`（勿硬编码 hash）
 - 若更改过 `preset/agent.cordis.yml` 或任一 skill，需重新部署用户预设并验证 `standingKeyFor('cq-os')`
 
 ## 1. 挂载验证
